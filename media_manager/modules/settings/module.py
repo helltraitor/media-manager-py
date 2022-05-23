@@ -1,3 +1,5 @@
+import logging
+
 from pathlib import Path
 
 from media_manager.application.api import ModuleLoader, ModuleMeta, ModuleWidget
@@ -5,7 +7,7 @@ from media_manager.application.api import ModuleLoader, ModuleMeta, ModuleWidget
 
 class ProtectedModuleMeta(ModuleMeta):
     def __init__(self):
-        print("Info: Settings.Meta is successfully loaded")
+        logging.info("Settings.ProtectedModuleMeta is successfully loaded")
 
     def id(self) -> str:
         return f"{self.name()} {self.version()}"
@@ -23,7 +25,7 @@ class ProtectedModuleMeta(ModuleMeta):
 
 class ProtectedModuleWidget(ModuleWidget):
     def __init__(self):
-        print("Info: Settings.Widget is successfully loaded")
+        logging.info("Settings.ProtectedModuleWidget is successfully loaded")
 
     def icon(self) -> Path:
         return Path(__file__).parent / "resources" / "icon.svg"
@@ -34,7 +36,7 @@ class ProtectedModuleWidget(ModuleWidget):
 
 class PublicModuleLoader(ModuleLoader):
     def __init__(self):
-        print("Info: Settings module is successfully loaded")
+        logging.info("Settings.ProtectedModuleLoader is successfully loaded")
 
     def initialize_meta(self) -> ModuleMeta | None:
         return ProtectedModuleMeta()
