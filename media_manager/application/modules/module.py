@@ -12,8 +12,8 @@ class Module:
         self.__module_widget: ModuleWidget | None | NotLoaded = NotLoaded()
 
     @property
-    def id(self):
-        return self.module_meta.id()
+    def id(self) -> str:
+        return self.module_meta.id() if self.module_meta is not None else 'Module.id error'
 
     @property
     def loading_priority(self) -> float:
