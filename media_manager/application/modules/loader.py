@@ -1,3 +1,5 @@
+import logging
+
 from importlib import import_module
 from pathlib import Path
 from typing import Type
@@ -40,7 +42,7 @@ class ModulesLoader:
 
     def add_modules_location(self, location: Path):
         if not location.is_dir():
-            print(f'Warning: Indicated location is not a directory: "{location}"')
+            logging.warning(f'{type(self).__name__}: Indicated location is not a directory: "{location}"')
             return
         self.modules_locations.append(location)
 
@@ -64,7 +66,14 @@ class ModulesLoader:
     def load_all(self, keeper: ModulesKeeper):
         modules = [Module(loader()) for loader in self.modules_loaders]
         for module in sorted(modules, key=lambda mod: mod.loading_priority or 1):
-            if module.module_meta is None or not module.module_meta.is_supported_api(APPLICATION_MODULE_API_VERSION):
+            if module.module_meta is None:
+                logging.error(f'{type(self).__name__}: Unable to load module without meta information')
+                self.modules_objects["FAILURE"].append(module)
+            elif not module.module_meta.is_supported_api(APPLICATION_MODULE_API_VERSION):
+                logging.error(' '.join((
+                    f'{type(self).__name__}:',
+                    f'Unable to load module that is not support {APPLICATION_MODULE_API_VERSION} api version.',
+                    f'Module id is `{module.id}`')))
                 self.modules_objects["FAILURE"].append(module)
             else:
                 self.modules_objects["SUCCESS"].append(module)
