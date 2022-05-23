@@ -45,7 +45,7 @@ class ModuleBar(QWidget):
         self.v_layout.setContentsMargins(0, 0, 0, 0)
 
     def reload_widgets(self):
-        modules = QApplication.instance().keeper.modules.values()
+        modules = QApplication.instance().keeper.module_all()
         removed = (item for item in self.items if item.module.id not in {module.id for module in modules})
         for item in removed:
             self.items.remove(item)
