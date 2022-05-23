@@ -14,7 +14,6 @@ class ModulesKeeper:
         self.__modules[module.id] = module
 
     def module_remove(self, module_id: str):
-        module = self.modules.pop(module_id)
         module = self.__modules.pop(module_id)
 
     def module_all(self) -> list[Module]:
