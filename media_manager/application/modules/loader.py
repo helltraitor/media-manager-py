@@ -5,6 +5,7 @@ from typing import Type
 from media_manager.application.api import ModuleLoader
 from media_manager.application.constants import APPLICATION_MODULE_API_VERSION
 
+from .keeper import ModulesKeeper
 from .module import Module
 
 
@@ -27,7 +28,7 @@ class ImportLocations:
                 ImportLocations.import_locations.remove(location)
 
 
-class Loader:
+class ModulesLoader:
     def __init__(self, app_location: Path):
         self.app_location = app_location
         self.modules_locations: list[Path] = []
@@ -44,6 +45,10 @@ class Loader:
         self.modules_locations.append(location)
 
     def find_all(self):
+        self.modules_loaders.clear()
+        self.modules_objects["SUCCESS"].clear()
+        self.modules_objects["FAILURE"].clear()
+
         with ImportLocations(str(self.app_location), *(str(location) for location in self.modules_locations)):
             for location in self.modules_locations:
                 # Find all modules names in indicated import locations
@@ -56,13 +61,14 @@ class Loader:
                 modules_loaders = tuple(loader for loader in modules_loaders if issubclass(loader, ModuleLoader))
                 self.modules_loaders.extend(modules_loaders)
 
-    def load_all(self):
+    def load_all(self, keeper: ModulesKeeper):
         modules = [Module(loader()) for loader in self.modules_loaders]
         for module in sorted(modules, key=lambda mod: mod.loading_priority or 1):
             if module.module_meta is None or not module.module_meta.is_supported_api(APPLICATION_MODULE_API_VERSION):
                 self.modules_objects["FAILURE"].append(module)
             else:
                 self.modules_objects["SUCCESS"].append(module)
+                keeper.module_add(module)
 
     def fetch_failure(self) -> list[Module]:
         return self.modules_objects["FAILURE"]

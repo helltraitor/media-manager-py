@@ -1,7 +1,9 @@
-from .loader import Loader
+from .keeper import ModulesKeeper
+from .loader import ModulesLoader
 from .module import Module
 
 __all__ = [
-    Loader,
+    ModulesKeeper,
+    ModulesLoader,
     Module
 ]
