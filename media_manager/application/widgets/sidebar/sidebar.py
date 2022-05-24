@@ -1,34 +1,14 @@
 import logging
 
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PySide2.QtGui import QMouseEvent
+from PySide2.QtWidgets import QVBoxLayout, QWidget
 
-from media_manager.application.api import ModuleWidget
+from media_manager.application.callbacks import Callback
+from media_manager.application.filters import SingleFilter
 from media_manager.application.modules import Module
 
-
-class SideBarWidget(QWidget):
-    def __init__(self, widget: ModuleWidget):
-        super().__init__()
-        self.widget = widget
-
-        self.v_layout = QVBoxLayout(self)
-        self.icon = QIcon(widget.icon())
-        self.icon_label = QLabel()
-        self.title_label = QLabel()
-        self.__setup()
-
-    def __setup(self):
-        # Label
-        self.icon_label.setContentsMargins(0, 0, 0, 0)
-        self.icon_label.setPixmap(self.icon.pixmap(36, 36))
-        self.title_label.setText(self.widget.title())
-        # Layout
-        self.v_layout.setContentsMargins(0, 0, 0, 0)
-        self.v_layout.addWidget(self.icon_label, alignment=Qt.AlignCenter)
-        # Self
-        self.setFixedSize(72, 72)
+from .widget import SideBarWidget
 
 
 class SideBar(QWidget):
@@ -41,11 +21,23 @@ class SideBar(QWidget):
         self.__setup()
 
     def __setup(self):
-        self.setFixedWidth(84)
+        # Layout
         self.v_layout.setContentsMargins(0, 0, 0, 0)
+        # Self
+        self.setFixedWidth(84)
+
+    def __widget_chosen(self, chosen: SideBarWidget):
+        print("CHOSEN")
+        for widget in self.widgets.values():
+            if widget is not chosen and widget.selected():
+                widget.reset_selection()
 
     def widget_add(self, module: Module):
         sb_widget = SideBarWidget(module.module_widget)
+        sb_widget.callback_set("onclick", Callback(
+            lambda: self.__widget_chosen(sb_widget),
+            SingleFilter(lambda e: isinstance(e, QMouseEvent) and e.button() == Qt.LeftButton)
+        ))
 
         str_alignment = sb_widget.widget.alignment()
         qt_alignment = {
