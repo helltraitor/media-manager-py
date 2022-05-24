@@ -2,7 +2,7 @@ import logging
 
 from pathlib import Path
 
-from media_manager.application.api import ModuleLoader, ModuleMeta, ModuleWidget
+from media_manager.application.api import ModuleLoader, ModuleMeta, ModuleWidget, ModuleWindow
 
 
 class ProtectedModuleMeta(ModuleMeta):
