@@ -7,7 +7,7 @@ class ModuleWidget(ABC):
         return "BEGIN"
 
     @abstractmethod
-    def icon(self) -> Path:
+    def icon(self) -> str:
         pass
 
     @abstractmethod

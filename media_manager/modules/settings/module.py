@@ -27,8 +27,8 @@ class ProtectedModuleWidget(ModuleWidget):
     def __init__(self):
         logging.info("Settings.ProtectedModuleWidget is successfully loaded")
 
-    def icon(self) -> Path:
-        return Path(__file__).parent / "resources" / "icon.svg"
+    def icon(self) -> str:
+        return str(Path(__file__).parent / "resources" / "icon.svg")
 
     def title(self) -> str:
         return "Settings"
