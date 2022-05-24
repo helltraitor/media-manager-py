@@ -3,6 +3,9 @@ from pathlib import Path
 
 
 class ModuleWidget(ABC):
+    def alignment(self) -> str:
+        return "BEGIN"
+
     @abstractmethod
     def icon(self) -> Path:
         pass
@@ -10,6 +13,3 @@ class ModuleWidget(ABC):
     @abstractmethod
     def title(self) -> str:
         pass
-
-    def alignment(self) -> str:
-        return "BEGIN"
