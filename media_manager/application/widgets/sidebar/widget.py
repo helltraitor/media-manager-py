@@ -1,12 +1,13 @@
 import logging
 
 from PySide2.QtCore import Qt, QEvent, QRect
-from PySide2.QtGui import QIcon, QMouseEvent, QPaintEvent
+from PySide2.QtGui import QIcon, QMouseEvent
 from PySide2.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from media_manager.application.api import ModuleWidget
 
 from media_manager.application.callbacks import Callback
+from media_manager.application.filters import AllFilter, SingleFilter
 
 from .painters import (
     SideBarWidgetGrayPainter, SideBarWidgetWhitePainter, SideBarWidgetNonePainter
@@ -18,9 +19,6 @@ class SideBarWidget(QWidget):
         super().__init__()
         self.__callbacks: dict[str, Callback] = {}
         self.widget = widget
-
-        self.painter_on_hover = SideBarWidgetGrayPainter
-        self.painter_on_click = SideBarWidgetWhitePainter
         self.painter = SideBarWidgetNonePainter
 
         self.v_layout = QVBoxLayout(self)
@@ -40,45 +38,43 @@ class SideBarWidget(QWidget):
         self.v_layout.addWidget(self.title_label, alignment=Qt.AlignCenter)
         # Self
         self.setFixedSize(72, 72)
+        self.__setup_callbacks()
+
+    def __setup_callbacks(self):
+        # Hover events
+        self.callback_set("set-painter-on-hover-enter", Callback(
+            lambda: setattr(self, "painter", SideBarWidgetGrayPainter),
+            lambda: self.repaint())
+                .with_filter(AllFilter(
+                    lambda e: isinstance(e, QEvent) and e.type() == QEvent.Enter,
+                    lambda obj: self.painter is not SideBarWidgetWhitePainter)))
+        self.callback_set("set-painter-on-hover-leave", Callback(
+            lambda: setattr(self, "painter", SideBarWidgetNonePainter),
+            lambda: self.repaint())
+                .with_filter(AllFilter(
+                    lambda e: isinstance(e, QEvent) and e.type() == QEvent.Leave,
+                    lambda _: self.painter is not SideBarWidgetWhitePainter)))
+        # Click event
+        self.callback_set("set_painter-on-left-click", Callback(
+            lambda: setattr(self, "painter", SideBarWidgetWhitePainter),
+            lambda: self.repaint())
+                .with_filter(AllFilter(
+                    lambda e: isinstance(e, QMouseEvent) and e.button() == Qt.LeftButton,
+                    lambda _: self.painter is not SideBarWidgetWhitePainter)))
+        # Paint event
+        self.callback_set("background-paint", Callback(
+            lambda: self.painter.paint(self))
+                .with_filter(SingleFilter(lambda e: isinstance(e, QEvent) and e.type() == QEvent.Paint)))
 
     @property
     def active_rect(self) -> QRect:
         rect = self.rect()
         return QRect(rect.x() + 3, rect.y() + 3, rect.width() - 6, rect.height() - 6)
 
-    def mousePressEvent(self, event: QMouseEvent):
-        if event.button() == Qt.LeftButton:
-            self.painter = self.painter_on_click
-        self.repaint()
-
-        # Temporally
+    def event(self, event: QEvent) -> bool:
         for callback in self.__callbacks.values():
             callback.call_on(event)
-
-    def enterEvent(self, event: QEvent):
-        if self.painter is not self.painter_on_click:
-            self.painter = self.painter_on_hover
-        self.repaint()
-
-        # Temporally
-        for callback in self.__callbacks.values():
-            callback.call_on(event)
-
-    def leaveEvent(self, event: QEvent):
-        if self.painter is not self.painter_on_click:
-            self.painter = None
-        self.repaint()
-
-        # Temporally
-        for callback in self.__callbacks.values():
-            callback.call_on(event)
-
-    def paintEvent(self, event: QPaintEvent):
-        self.painter.paint(self)
-
-        # Temporally
-        for callback in self.__callbacks.values():
-            callback.call_on(event)
+        return False
 
     def callback_set(self, key: str, callback: Callback):
         self.__callbacks[key] = callback
