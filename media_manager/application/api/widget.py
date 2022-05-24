@@ -1,6 +1,5 @@
-from pathlib import Path
-
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 
 class ModuleWidget(ABC):
@@ -11,3 +10,6 @@ class ModuleWidget(ABC):
     @abstractmethod
     def title(self) -> str:
         pass
+
+    def alignment(self) -> str:
+        return "BEGIN"
