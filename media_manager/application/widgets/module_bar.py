@@ -10,12 +10,12 @@ from media_manager.application.modules import Module
 
 
 class ModuleBarItem(QWidget):
-    def __init__(self, module: Module):
+    def __init__(self, widget: ModuleWidget):
         super().__init__()
-        self.module = module
+        self.widget = widget
 
         self.v_layout = QVBoxLayout(self)
-        self.icon = QIcon(str(module.module_widget.icon()))
+        self.icon = QIcon(widget.icon())
         self.icon_label = QLabel()
         self.title_label = QLabel()
         self.__setup()
@@ -24,7 +24,7 @@ class ModuleBarItem(QWidget):
         # Label
         self.icon_label.setContentsMargins(0, 0, 0, 0)
         self.icon_label.setPixmap(self.icon.pixmap(36, 36))
-        self.title_label.setText(self.module.module_widget.title())
+        self.title_label.setText(self.widget.title())
         # Layout
         self.v_layout.setContentsMargins(0, 0, 0, 0)
         self.v_layout.addWidget(self.icon_label, alignment=Qt.AlignCenter)
