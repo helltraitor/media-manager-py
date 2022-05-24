@@ -6,6 +6,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel
 
+from media_manager.application.api import ModuleWidget
 from media_manager.application.modules import Module
 
 
@@ -55,3 +56,15 @@ class ModuleBar(QWidget):
 
         self.items.append(item)
         self.v_layout.addWidget(item, alignment=qt_alignment)
+
+    def widget_remove(self, module: Module):
+        module_item: ModuleBarItem | None = None
+        for item in self.items:
+            if item.widget is module.module_widget:
+                module_item = item
+
+        if module_item is None:
+            return
+
+        self.v_layout.removeWidget(module_item.widget)
+        self.items.remove(module_item)
