@@ -1,3 +1,5 @@
+import logging
+
 from PySide2 import QtWidgets
 from PySide2 import QtGui
 from PySide2 import QtCore
@@ -64,6 +66,7 @@ class ModuleBar(QWidget):
                 module_item = item
 
         if module_item is None:
+            logging.error(f'ModuleBar: ModuleBarItem is not found for module with `{module.id}` id')
             return
 
         self.v_layout.removeWidget(module_item.widget)
