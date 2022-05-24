@@ -2,9 +2,10 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QHBoxLayout, QWidget
 
-
-from .sidebar import SideBar
 from media_manager.application.constants import APPLICATION_ICON, APPLICATION_NAME
+
+from .main import MainWidget
+from .sidebar import SideBar
 
 
 class Window(QWidget):
@@ -14,6 +15,7 @@ class Window(QWidget):
 
         self.h_layout = QHBoxLayout(self)
         self.side_bar = SideBar()
+        self.main = MainWidget()
         self.__setup()
 
     def __setup(self):
