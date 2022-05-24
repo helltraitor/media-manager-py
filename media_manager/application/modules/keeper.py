@@ -13,11 +13,11 @@ class ModulesKeeper:
             return
         self.__modules[module.id] = module
 
+    def module_list(self) -> list[Module]:
+        return list(self.__modules.values())
+
     def module_remove(self, module_id: str):
         module = self.__modules.pop(module_id)
-
-    def module_all(self) -> list[Module]:
-        return list(self.__modules.values())
 
 
 # Separated warning function to reduce cognitive load
