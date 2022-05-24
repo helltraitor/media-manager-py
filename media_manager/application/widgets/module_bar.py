@@ -44,16 +44,14 @@ class ModuleBar(QWidget):
     def __setup(self):
         self.v_layout.setContentsMargins(0, 0, 0, 0)
 
-    def reload_widgets(self):
-        modules = QApplication.instance().keeper.module_all()
-        removed = (item for item in self.items if item.module.id not in {module.id for module in modules})
-        for item in removed:
-            self.items.remove(item)
-            self.v_layout.removeWidget(item)
+    def widget_add(self, widget: ModuleWidget):
+        item = ModuleBarItem(widget)
 
-        added = (module for module in modules if module.id not in {item.module.id for item in self.items})
-        added = (module for module in added if module.module_widget is not None)
-        for module in added:
-            item = ModuleBarItem(module)
-            self.items.append(item)
-            self.v_layout.addWidget(item)
+        str_alignment = widget.alignment()
+        qt_alignment = {
+            "BEGIN": Qt.AlignTop,
+            "END": Qt.AlignBottom
+        }.get(str_alignment, Qt.AlignTop)
+
+        self.items.append(item)
+        self.v_layout.addWidget(item, alignment=qt_alignment)
