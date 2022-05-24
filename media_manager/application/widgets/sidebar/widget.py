@@ -59,7 +59,8 @@ class SideBarWidget(QWidget):
             lambda: setattr(self, "painter", SideBarWidgetWhitePainter),
             lambda: self.repaint())
                 .with_filter(AllFilter(
-                    lambda e: isinstance(e, QMouseEvent) and e.button() == Qt.LeftButton,
+                    lambda e: isinstance(e, QMouseEvent),
+                    lambda e: e.button() == Qt.LeftButton and e.type() == QMouseEvent.MouseButtonPress,
                     lambda _: self.painter is not SideBarWidgetWhitePainter)))
         # Paint event
         self.callback_set("background-paint", Callback(

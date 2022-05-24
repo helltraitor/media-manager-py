@@ -5,7 +5,7 @@ from PySide2.QtGui import QMouseEvent
 from PySide2.QtWidgets import QVBoxLayout, QWidget
 
 from media_manager.application.callbacks import Callback
-from media_manager.application.filters import SingleFilter
+from media_manager.application.filters import AllFilter
 from media_manager.application.modules import Module
 
 from .widget import SideBarWidget
@@ -35,7 +35,9 @@ class SideBar(QWidget):
         sb_widget = SideBarWidget(module.module_widget)
         sb_widget.callback_set("reset-other-selections-on-click", Callback(
             lambda: self.__widget_chosen(sb_widget))
-                .with_filter(SingleFilter(lambda e: isinstance(e, QMouseEvent) and e.button() == Qt.LeftButton)))
+                .with_filter(AllFilter(
+                    lambda e: isinstance(e, QMouseEvent),
+                    lambda e: e.button() == Qt.LeftButton and e.type() == QMouseEvent.MouseButtonPress)))
 
         str_alignment = sb_widget.widget.alignment()
         qt_alignment = {
