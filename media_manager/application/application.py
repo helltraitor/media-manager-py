@@ -20,8 +20,12 @@ class Application(QApplication):
         self.loader.find_all()
         self.loader.load_all(self.keeper)
 
+        modules = self.keeper.module_list()
+        for module in modules:
+            if module.module_widget is not None:
+                self.window.modules_view.widget_add(module.module_widget)
+
     def start(self) -> int:
         self.load_modules()
-        self.window.modules_view.reload_widgets()
         self.window.show()
         return self.exec_()
