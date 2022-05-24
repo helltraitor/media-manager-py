@@ -27,17 +27,15 @@ class SideBar(QWidget):
         self.setFixedWidth(84)
 
     def __widget_chosen(self, chosen: SideBarWidget):
-        print("CHOSEN")
         for widget in self.widgets.values():
             if widget is not chosen and widget.selected():
                 widget.reset_selection()
 
     def widget_add(self, module: Module):
         sb_widget = SideBarWidget(module.module_widget)
-        sb_widget.callback_set("onclick", Callback(
-            lambda: self.__widget_chosen(sb_widget),
-            SingleFilter(lambda e: isinstance(e, QMouseEvent) and e.button() == Qt.LeftButton)
-        ))
+        sb_widget.callback_set("reset-other-selections-on-click", Callback(
+            lambda: self.__widget_chosen(sb_widget))
+                .with_filter(SingleFilter(lambda e: isinstance(e, QMouseEvent) and e.button() == Qt.LeftButton)))
 
         str_alignment = sb_widget.widget.alignment()
         qt_alignment = {
