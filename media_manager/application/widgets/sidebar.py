@@ -1,18 +1,14 @@
 import logging
 
-from PySide2 import QtWidgets
-from PySide2 import QtGui
-from PySide2 import QtCore
-
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QLabel
 
 from media_manager.application.api import ModuleWidget
 from media_manager.application.modules import Module
 
 
-class ModuleBarItem(QWidget):
+class SideBarWidget(QWidget):
     def __init__(self, widget: ModuleWidget):
         super().__init__()
         self.widget = widget
@@ -35,39 +31,40 @@ class ModuleBarItem(QWidget):
         self.setFixedSize(72, 72)
 
 
-class ModuleBar(QWidget):
+class SideBar(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.items: list[ModuleBarItem] = []
+        self.widgets: dict[str, SideBarWidget] = {}
 
         self.v_layout = QVBoxLayout(self)
         self.__setup()
 
     def __setup(self):
+        self.setFixedWidth(84)
         self.v_layout.setContentsMargins(0, 0, 0, 0)
 
-    def widget_add(self, widget: ModuleWidget):
-        item = ModuleBarItem(widget)
+    def widget_add(self, module: Module):
+        sb_widget = SideBarWidget(module.module_widget)
 
-        str_alignment = widget.alignment()
+        str_alignment = sb_widget.widget.alignment()
         qt_alignment = {
             "BEGIN": Qt.AlignTop,
             "END": Qt.AlignBottom
         }.get(str_alignment, Qt.AlignTop)
 
-        self.items.append(item)
-        self.v_layout.addWidget(item, alignment=qt_alignment)
-
-    def widget_remove(self, module: Module):
-        module_item: ModuleBarItem | None = None
-        for item in self.items:
-            if item.widget is module.module_widget:
-                module_item = item
-
-        if module_item is None:
-            logging.error(f'ModuleBar: ModuleBarItem is not found for module with `{module.id}` id')
+        if self.widgets.get(module.id, None) is not None:
+            logging.warning(f'{type(self).__name__}: Attempting to add a module widget with the same `{module.id}` id')
             return
 
-        self.v_layout.removeWidget(module_item.widget)
-        self.items.remove(module_item)
+        self.widgets[module.id] = sb_widget
+        self.v_layout.addWidget(sb_widget, alignment=qt_alignment)
+
+    def widget_remove(self, module: Module):
+        widget = self.widgets.pop(module.id, None)
+        if widget is None:
+            logging.error(
+                f'{type(self).__name__}: {type(widget).__name__} is not found for module with `{module.id}` id')
+            return
+
+        self.v_layout.removeWidget(widget)

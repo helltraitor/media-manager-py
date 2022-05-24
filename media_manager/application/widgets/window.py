@@ -3,7 +3,7 @@ from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QHBoxLayout, QWidget
 
 
-from .module_bar import ModuleBar
+from .sidebar import SideBar
 from media_manager.application.constants import APPLICATION_ICON, APPLICATION_NAME
 
 
@@ -13,14 +13,14 @@ class Window(QWidget):
         self.icon = QIcon(APPLICATION_ICON)
 
         self.h_layout = QHBoxLayout(self)
-        self.modules_view = ModuleBar()
+        self.side_bar = SideBar()
         self.__setup()
 
     def __setup(self):
         # Layout
         self.h_layout.setAlignment(Qt.AlignLeft)
         self.h_layout.setContentsMargins(0, 0, 0, 0)
-        self.h_layout.addWidget(self.modules_view)
+        self.h_layout.addWidget(self.side_bar)
         # Window
         self.setWindowIcon(self.icon)
         self.setWindowTitle(APPLICATION_NAME)
