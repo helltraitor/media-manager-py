@@ -17,7 +17,9 @@ class ModulesKeeper:
         return list(self.__modules.values())
 
     def module_remove(self, module_id: str):
-        module = self.__modules.pop(module_id)
+        module = self.__modules.pop(module_id, None)
+        if module is None:
+            logging.error(f'{type(self).__name__}: Attempting to remove non-existing module with `{module_id}` id')
 
 
 # Separated warning function to reduce cognitive load
