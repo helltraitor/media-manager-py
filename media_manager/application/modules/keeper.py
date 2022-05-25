@@ -1,6 +1,6 @@
 import logging
 
-from .module import Module
+from media_manager.application.api.module import Module
 
 
 class ModulesKeeper:
