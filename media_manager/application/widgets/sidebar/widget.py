@@ -4,7 +4,7 @@ from PySide2.QtCore import Qt, QEvent, QRect
 from PySide2.QtGui import QIcon, QMouseEvent
 from PySide2.QtWidgets import QLabel, QVBoxLayout, QWidget
 
-from media_manager.application.api import ModuleWidget
+from media_manager.application.api.module.widget import ModuleWidget
 
 from media_manager.application.callbacks import Callback
 from media_manager.application.filters import AllFilter, SingleFilter

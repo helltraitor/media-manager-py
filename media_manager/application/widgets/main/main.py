@@ -2,7 +2,7 @@ import logging
 
 from PySide2.QtWidgets import QWidget, QStackedLayout
 
-from media_manager.application.modules import Module
+from media_manager.application.api.module import Module
 
 from.layer import MainWidgetLayer
 
@@ -18,7 +18,7 @@ class MainWidget(QWidget):
         self.__stack.setContentsMargins(0, 0, 0, 0)
 
     def window_add(self, module: Module):
-        layer = MainWidgetLayer(module.module_window)
+        layer = MainWidgetLayer(module.window)
 
         if self.__layers.get(module.id, None) is not None:
             logging.warning(f'{type(self).__name__}: Attempting to add a module window with the same `{module.id}` id')

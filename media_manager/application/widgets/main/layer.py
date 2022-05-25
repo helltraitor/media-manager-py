@@ -3,7 +3,7 @@ import logging
 from PySide2.QtCore import QEvent
 from PySide2.QtWidgets import QWidget, QLayout
 
-from media_manager.application.api import ModuleWindow
+from media_manager.application.api.module.window import ModuleWindow
 from media_manager.application.callbacks import Callback
 
 

@@ -2,11 +2,11 @@ import logging
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QMouseEvent
-from PySide2.QtWidgets import QVBoxLayout, QWidget
+from PySide2.QtWidgets import QVBoxLayout, QWidget, QSizePolicy
 
+from media_manager.application.api.module import Module
 from media_manager.application.callbacks import Callback
 from media_manager.application.filters import AllFilter
-from media_manager.application.modules import Module
 
 from .widget import SideBarWidget
 
@@ -14,7 +14,6 @@ from .widget import SideBarWidget
 class SideBar(QWidget):
     def __init__(self):
         super().__init__()
-
         self.widgets: dict[str, SideBarWidget] = {}
 
         self.v_layout = QVBoxLayout(self)
@@ -25,6 +24,7 @@ class SideBar(QWidget):
         self.v_layout.setContentsMargins(0, 0, 0, 0)
         # Self
         self.setFixedWidth(84)
+        # self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed))
 
     def __widget_chosen(self, chosen: SideBarWidget):
         for widget in self.widgets.values():
@@ -32,7 +32,7 @@ class SideBar(QWidget):
                 widget.reset_selection()
 
     def widget_add(self, module: Module):
-        sb_widget = SideBarWidget(module.module_widget)
+        sb_widget = SideBarWidget(module.widget)
         sb_widget.callback_set("reset-other-selections-on-click", Callback(
             lambda: self.__widget_chosen(sb_widget))
                 .with_filter(AllFilter(
