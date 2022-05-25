@@ -86,7 +86,8 @@ class SideBarWidget(QWidget):
             logging.warning(f'{type(self).__name__}: Attempting to remove non-existing callback')
 
     def selected(self) -> bool:
-        return self.painter is self.painter_on_click
+        return self.painter is SideBarWidgetWhitePainter
 
     def reset_selection(self):
         self.painter = SideBarWidgetNonePainter
+        self.repaint()
