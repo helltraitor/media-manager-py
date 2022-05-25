@@ -9,7 +9,7 @@ from.layer import MainWidgetLayer
 
 class MainWidget(QWidget):
     def __init__(self):
-        super().__init__(self)
+        super().__init__()
         self.__layers: dict[str, MainWidgetLayer] = {}
         self.__stack = QStackedLayout(self)
         self.__setup()
