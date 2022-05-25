@@ -17,7 +17,7 @@ class ProtectedModuleMeta(ModuleMeta):
         return version.split(".", 3)[0] == "0"
 
     def name(self) -> str:
-        return "Settings"
+        return "About"
 
     def version(self) -> str:
         return "0.0.1"
