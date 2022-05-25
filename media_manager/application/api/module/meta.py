@@ -7,10 +7,6 @@ class ModuleMeta(ABC):
         pass
 
     @abstractmethod
-    def is_supported_api(self, version: str) -> bool:
-        pass
-
-    @abstractmethod
     def name(self) -> str:
         pass
 
