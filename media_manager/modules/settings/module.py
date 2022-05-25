@@ -31,7 +31,7 @@ class ProtectedModuleWidget(ModuleWidget):
         return "END"
 
     def icon(self) -> str:
-        return str(Path(__file__).parent / "resources" / "icon.svg")
+        return str(Path(__file__).parent / "resources" / "carol-liao-adjust-icon.svg")
 
     def title(self) -> str:
         return "Settings"
