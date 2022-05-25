@@ -1,19 +1,16 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
-from .meta import ModuleMeta
-from .widget import ModuleWidget
-from .window import ModuleWindow
+from .module import Module
 
 
 class ModuleLoader(ABC):
-    def initialize_meta(self) -> ModuleMeta | None:
-        return None
+    @abstractmethod
+    def is_api_supported(self, version: str) -> bool:
+        pass
 
-    def initialize_widget(self) -> ModuleWidget | None:
-        return None
-
-    def initialize_window(self) -> ModuleWindow | None:
-        return None
+    @abstractmethod
+    def load(self) -> Module:
+        pass
 
     def loading_priority(self) -> float | None:
         return None
