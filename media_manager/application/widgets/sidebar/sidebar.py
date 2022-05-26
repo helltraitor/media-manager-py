@@ -14,20 +14,20 @@ from .widget import SideBarWidget
 class SideBar(QWidget):
     def __init__(self):
         super().__init__()
-        self.widgets: dict[str, SideBarWidget] = {}
+        self.__widgets: dict[str, SideBarWidget] = {}
+        self.__layout = QVBoxLayout(self)
 
-        self.v_layout = QVBoxLayout(self)
         self.__setup()
 
     def __setup(self):
         # Layout
-        self.v_layout.setContentsMargins(0, 0, 0, 0)
+        self.__layout.setContentsMargins(0, 0, 0, 0)
         # Self
         self.setFixedWidth(84)
         # self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed))
 
     def __widget_chosen(self, chosen: SideBarWidget):
-        for widget in self.widgets.values():
+        for widget in self.__widgets.values():
             if widget is not chosen and widget.selected():
                 widget.reset_selection()
 
@@ -47,15 +47,15 @@ class SideBar(QWidget):
         #     "END": Qt.AlignBottom
         # }.get(str_alignment, Qt.AlignTop)
 
-        if self.widgets.get(module.id, None) is not None:
+        if self.__widgets.get(module.id, None) is not None:
             logging.warning(f'{type(self).__name__}: Attempting to add a module widget with the same `{module.id}` id')
             return
 
-        self.widgets[module.id] = sb_widget
-        self.v_layout.addWidget(sb_widget, alignment=Qt.AlignTop)
+        self.__widgets[module.id] = sb_widget
+        self.__layout.addWidget(sb_widget, alignment=Qt.AlignTop)
 
     def widget_remove(self, module: Module):
-        widget = self.widgets.pop(module.id, None)
+        widget = self.__widgets.pop(module.id, None)
         if widget is None:
             logging.error(
                 f'{type(self).__name__}: {type(widget).__name__} is not found for module with `{module.id}` id')
