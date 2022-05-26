@@ -8,18 +8,20 @@ from media_manager.application.api.module.widget import Widget
 class SideBarWidget(QWidget):
     def __init__(self, widget: Widget):
         super().__init__()
-        self.__layout = QVBoxLayout(self)
+        # Data
         self.__selected = False
+        # Gui
+        self.__layout = QVBoxLayout(self)
         self.__widget = widget
-
+        # Setup
         self.__setup()
 
     def __setup(self):
         # Layout
-        self.__layout.setContentsMargins(0, 0, 0, 0)
+        self.__layout.setContentsMargins(6, 6, 6, 6)
         self.__layout.addWidget(self.__widget, alignment=Qt.AlignCenter)
-        # Self
-        self.setFixedSize(72, 72)
+        # Widget
+        self.__widget.setFixedSize(72, 72)
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.type() is QMouseEvent.MouseButtonPress and event.button() is Qt.LeftButton:

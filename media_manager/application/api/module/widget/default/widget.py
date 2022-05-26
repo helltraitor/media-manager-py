@@ -33,12 +33,10 @@ class DefaultWidget(Widget):
         self.icon_label.setPixmap(self.icon.pixmap(36, 36))
         self.title_label.setText(self.title)
         # Layout
-        self.v_layout.setContentsMargins(0, 0, 0, 0)
+        self.v_layout.setContentsMargins(6, 6, 6, 6)
         self.v_layout.addWidget(self.icon_label, alignment=Qt.AlignCenter)
         self.v_layout.addWidget(self.title_label, alignment=Qt.AlignCenter)
         # Self
-        self.setContentsMargins(3, 3, 3, 3)
-        self.setFixedSize(72, 72)
         self.__setup_callbacks()
 
     def __setup_callbacks(self):
