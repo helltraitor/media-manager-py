@@ -8,8 +8,11 @@ from PySide2.QtWidgets import QWidget
 from media_manager.application.callbacks import Callback
 
 
-# class ModuleWidget(ABC, QWidget):
-class ModuleWidget(QWidget):
+class Widget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.__callbacks: dict[str, Callback] = {}
+
     def event(self, event: QEvent) -> bool:
         for callback in self.__callbacks.values():
             callback.call_on(event)
@@ -23,18 +26,8 @@ class ModuleWidget(QWidget):
         if callback is None:
             logging.warning(f'{type(self).__name__}: Attempting to remove non-existing callback')
 
-    @abstractmethod
-    def module_icon(self) -> str:
-        pass
 
+class ModuleWidget(ABC):
     @abstractmethod
-    def module_title(self) -> str:
-        pass
-
-    @abstractmethod
-    def widget_selected(self) -> bool:
-        pass
-
-    @abstractmethod
-    def widget_reset_selection(self):
+    def widget(self) -> Widget:
         pass
