@@ -32,25 +32,27 @@ class SideBar(QWidget):
                 widget.reset_selection()
 
     def widget_add(self, module: Module):
-        sb_widget = SideBarWidget(module.widget)
-        sb_widget.callback_set("reset-other-selections-on-click", Callback(
+        m_widget = module.widget.widget()
+        sb_widget = SideBarWidget(m_widget)
+
+        m_widget.callback_set("reset-other-selections-on-click", Callback(
             lambda: self.__widget_chosen(sb_widget))
                 .with_filter(AllFilter(
                     lambda e: isinstance(e, QMouseEvent),
                     lambda e: e.button() == Qt.LeftButton and e.type() == QMouseEvent.MouseButtonPress)))
 
-        str_alignment = sb_widget.widget.alignment()
-        qt_alignment = {
-            "BEGIN": Qt.AlignTop,
-            "END": Qt.AlignBottom
-        }.get(str_alignment, Qt.AlignTop)
+        # str_alignment = sb_widget.widget.alignment()
+        # qt_alignment = {
+        #     "BEGIN": Qt.AlignTop,
+        #     "END": Qt.AlignBottom
+        # }.get(str_alignment, Qt.AlignTop)
 
         if self.widgets.get(module.id, None) is not None:
             logging.warning(f'{type(self).__name__}: Attempting to add a module widget with the same `{module.id}` id')
             return
 
         self.widgets[module.id] = sb_widget
-        self.v_layout.addWidget(sb_widget, alignment=qt_alignment)
+        self.v_layout.addWidget(sb_widget, alignment=Qt.AlignTop)
 
     def widget_remove(self, module: Module):
         widget = self.widgets.pop(module.id, None)
