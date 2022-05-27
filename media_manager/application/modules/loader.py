@@ -4,8 +4,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Type
 
-from media_manager.application.api.loader import ModuleLoader
-from media_manager.application.api.module import Module
+from media_manager.application.api.module.loader import ModuleLoader
 from media_manager.application.constants import APPLICATION_MODULE_API_VERSION
 
 from .keeper import ModulesKeeper

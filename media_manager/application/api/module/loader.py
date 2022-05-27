@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from .module import Module
+from media_manager.application.api.module import Module
 
 
 class ModuleLoader(ABC):
