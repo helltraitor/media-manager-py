@@ -4,7 +4,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Type
 
-from media_manager.application.api.module.loader import ModuleLoader
+from media_manager.application.api.module import Module, ModuleLoader
 from media_manager.application.constants import APPLICATION_MODULE_API_VERSION
 
 from .keeper import ModulesKeeper
@@ -20,11 +20,12 @@ class Import:
 
     def make(self) -> ModuleType | None:
         if self.__module is None:
-            # noinspection PyBroadException
             try:
                 self.__module = Import.unwrap(self.__name, self.__package)
-            except Exception:
-                pass
+            except Exception as exc:
+                logging.error(
+                    f'{type(self).__name__}: Unable to import package with a module due to unexpected error',
+                    exc_info=exc)
         return self.__module
 
 
@@ -89,9 +90,18 @@ class ModulesLoader:
                     f'{type(self).__name__}:',
                     f'Unable to load module that is not support {APPLICATION_MODULE_API_VERSION} api version.')))
                 self.modules_objects["FAILURE"].append(loader)
-            else:
+                continue
+
+            module: Module | None = None
+            try:
+                module = loader.load()
+            except Exception as exc:
+                logging.error(f'{type(self).__name__}: Unable to load module due to unexpected error', exc_info=exc)
+                self.modules_objects["FAILURE"].append(loader)
+
+            if module is not None:
                 self.modules_objects["SUCCESS"].append(loader)
-                keeper.module_add(loader.load())
+                keeper.module_add(module)
 
     def fetch_failure(self) -> list[ModuleLoader]:
         return self.modules_objects["FAILURE"]
