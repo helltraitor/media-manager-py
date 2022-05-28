@@ -7,8 +7,8 @@ class ModuleWidgetDefaultPainter:
     def paint(self, widget: QWidget):
         pass
 
-
-class ModuleWidgetBackgroundPainter:
+    
+class ModuleWidgetBackgroundPainter(ModuleWidgetDefaultPainter):
     def __init__(self, color: QColor):
         self.__color = color
 

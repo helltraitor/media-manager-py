@@ -1,33 +1,33 @@
-import logging
-
 from abc import ABC, abstractmethod
 
 from PySide2.QtCore import QEvent
 from PySide2.QtWidgets import QWidget
 
-from media_manager.application.callbacks import Callback
+from media_manager.application.api.events import EventPool
+from media_manager.application.api.events.gui import GuiEvent
 
 
 class Widget(QWidget):
-    def __init__(self):
+    def __init__(self, module: "ModuleWidget"):
         super().__init__()
-        self.__callbacks: dict[str, Callback] = {}
+        self.__module = module
+
+    @property
+    def module(self):
+        return self.__module
 
     def event(self, event: QEvent) -> bool:
-        for callback in self.__callbacks.values():
-            callback.call_on(event)
-        return False
-
-    def callback_set(self, key: str, callback: Callback):
-        self.__callbacks[key] = callback
-
-    def callback_remove(self, key: str):
-        callback = self.__callbacks.pop(key, None)
-        if callback is None:
-            logging.warning(f'{type(self).__name__}: Attempting to remove non-existing callback')
+        # Qt event must be processed first
+        q_result = super().event(event)
+        self.module.events.announce(GuiEvent(event, self))
+        return q_result
 
 
 class ModuleWidget(ABC):
+    def __init__(self):
+        # Safety for sharing
+        self.events = EventPool()
+
     @abstractmethod
     def widget(self) -> Widget:
         pass

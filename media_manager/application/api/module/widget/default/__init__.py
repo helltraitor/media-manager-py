@@ -1,5 +1,1 @@
-from .widget import ModuleDefaultWidget
-
-__all__ = [
-    ModuleDefaultWidget
-]
+from .core import ModuleDefaultWidget
