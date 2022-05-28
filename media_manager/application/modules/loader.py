@@ -1,8 +1,10 @@
 import logging
 
+from importlib import import_module
 from pathlib import Path
 from types import ModuleType
 from typing import Type
+from sys import path as sys_path
 
 from media_manager.application.api.module import Module, ModuleLoader
 from media_manager.application.constants import APPLICATION_MODULE_API_VERSION
@@ -11,41 +13,41 @@ from .keeper import ModulesKeeper
 
 
 class Import:
-    from importlib import import_module as unwrap
-
     def __init__(self, name: str, package: str | None = None):
-        self.__module = None
+        self.__module: ModuleType | None = None
         self.__name = name
         self.__package = package
 
     def make(self) -> ModuleType | None:
         if self.__module is None:
             try:
-                self.__module = Import.unwrap(self.__name, self.__package)
+                self.__module = self.unwrap()
             except Exception as exc:
                 logging.error(
                     f'{type(self).__name__}: Unable to import package with a module due to unexpected error',
                     exc_info=exc)
         return self.__module
 
+    def unwrap(self) -> ModuleType:
+        return import_module(self.__name, self.__package)
+
 
 class ImportLocations:
-    from sys import path as import_locations
-
     def __init__(self, *locations: str):
-        self.import_locations = {
-            location: location in ImportLocations.import_locations for location in locations
+        self.system_locations: list[str] = sys_path
+        self.import_locations: dict[str, bool] = {
+            location: location in self.system_locations for location in locations
         }
 
     def __enter__(self):
         for location, appended in self.import_locations.items():
             if not appended:
-                ImportLocations.import_locations.append(location)
+                self.system_locations.append(location)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         for location, appended in self.import_locations.items():
             if not appended:
-                ImportLocations.import_locations.remove(location)
+                self.system_locations.remove(location)
 
 
 class ModulesLoader:

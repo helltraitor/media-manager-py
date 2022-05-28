@@ -25,14 +25,14 @@ class ModulesKeeper:
 # Separated warning function to reduce cognitive load
 def _double_module_add_warning(cls_name: str, old: Module, new: Module):
     old_module_meta = {
-        "meta": old.module_meta,
-        "name": old.module_meta.name() if old.module_meta is not None else "Error",
-        "version": old.module_meta.version() if old.module_meta is not None else "Error",
+        "meta": old.meta,
+        "name": old.meta.name() if old.meta is not None else "Error",
+        "version": old.meta.version() if old.meta is not None else "Error",
     }
     new_module_meta = {
-        "meta": new.module_meta,
-        "name": new.module_meta.name() if new.module_meta is not None else "Error",
-        "version": new.module_meta.version() if new.module_meta is not None else "Error",
+        "meta": new.meta,
+        "name": new.meta.name() if new.meta is not None else "Error",
+        "version": new.meta.version() if new.meta is not None else "Error",
     }
     logging.warning(f"{cls_name}: Attempting to override already loaded module with id `{old.id}`", extra={
         "new_module_meta": new_module_meta,
