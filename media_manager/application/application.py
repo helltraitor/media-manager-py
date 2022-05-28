@@ -23,7 +23,7 @@ class Application(QApplication):
         modules = self.keeper.module_list()
         for module in modules:
             if module.widget is not None:
-                self.window.side_bar.widget_add(module)
+                self.window.side_bar.widget_add(module.widget)
 
     def start(self) -> int:
         self.load_modules()
