@@ -1,18 +1,15 @@
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QMouseEvent
-from PySide2.QtWidgets import QWidget, QVBoxLayout
+from PySide2.QtWidgets import QVBoxLayout, QWidget
 
-from media_manager.application.api.module.widget import Widget
+from media_manager.application.api.module.widget import ModuleWidget
 
 
 class SideBarWidget(QWidget):
-    def __init__(self, widget: Widget):
+    def __init__(self, module: ModuleWidget):
         super().__init__()
-        # Data
-        self.__selected = False
-        # Gui
         self.__layout = QVBoxLayout(self)
-        self.__widget = widget
+        self.__module = module
+        self.__widget = module.widget()
         # Setup
         self.__setup()
 
@@ -23,18 +20,5 @@ class SideBarWidget(QWidget):
         # Widget
         self.__widget.setFixedSize(72, 72)
 
-    def mousePressEvent(self, event: QMouseEvent):
-        if event.type() is QMouseEvent.MouseButtonPress and event.button() is Qt.LeftButton:
-            if not self.__selected:
-                self.__selected = True
-                # TODO: Send message `widget was chosen`
-            else:
-                # TODO: Send message `widget was chosen again`
-                pass
-
-    def selected(self) -> bool:
-        return self.__selected
-
-    def reset_selection(self):
-        self.__selected = False
-        # TODO: Send message `widget selection was reset`
+    def module(self) -> ModuleWidget:
+        return self.__module
