@@ -2,7 +2,7 @@ import logging
 
 from PySide2.QtWidgets import QWidget, QStackedLayout
 
-from media_manager.application.api.module import Module
+from media_manager.application.api.module import ModuleWindow
 
 from.layer import MainWidgetLayer
 
@@ -10,26 +10,18 @@ from.layer import MainWidgetLayer
 class MainWidget(QWidget):
     def __init__(self):
         super().__init__()
-        self.__layers: dict[str, MainWidgetLayer] = {}
+        self.__layers: list[MainWidgetLayer] = {}
         self.__stack = QStackedLayout(self)
         self.__setup()
 
     def __setup(self):
         self.__stack.setContentsMargins(0, 0, 0, 0)
 
-    def window_add(self, module: Module):
-        layer = MainWidgetLayer(module.window)
+    def window_add(self, module: ModuleWindow):
+        layer = MainWidgetLayer(module)
 
-        if self.__layers.get(module.id, None) is not None:
-            logging.warning(f'{type(self).__name__}: Attempting to add a module window with the same `{module.id}` id')
+        if layer in self.__layers:
+            logging.warning(f'{type(self).__name__}: Attempting to add already added module window')
             return
-        self.__layers[module.id] = layer
+        self.__layers.append(layer)
         self.__stack.addWidget(layer)
-
-    def window_remove(self, module: Module):
-        layer = self.__layers.pop(module.id, None)
-        if layer is None:
-            logging.error(
-                f'{type(self).__name__}: {type(layer).__name__} is not found for module with `{module.id}` id')
-            return
-        self.__stack.removeWidget(layer)
