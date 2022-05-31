@@ -18,10 +18,8 @@ class Application(QApplication):
 
     def load_modules(self):
         self.loader.find_all()
-        self.loader.load_all(self.keeper)
-
-        modules = self.keeper.module_list()
-        for module in modules:
+        for module in self.loader.load_all():
+            self.keeper.module_add(module)
             if module.widget is not None:
                 self.window.side_bar.widget_add(module.widget)
 
