@@ -34,6 +34,9 @@ class ProtectedModuleWidget(ModuleDefaultWidget):
     def title(self) -> str:
         return "About"
 
+    def type(self) -> str:
+        return "System"
+
 
 class PublicModuleLoader(ModuleLoader):
     def __init__(self):
