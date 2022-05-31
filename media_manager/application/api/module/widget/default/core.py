@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from pathlib import Path
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QPaintEvent
@@ -53,9 +54,8 @@ class ModuleDefaultWidget(ModuleWidget):
         self.events.subscribe(DefaultBackgroundListener(self))
         self.events.subscribe(DefaultBackgroundPaintEventListener(self))
 
-    @abstractmethod
     def icon(self) -> str:
-        pass
+        return str(Path(__file__).parent.parent.parent.parent.parent.parent / "resources" / "carol-liao-solve-icon")
 
     @abstractmethod
     def title(self) -> str:
