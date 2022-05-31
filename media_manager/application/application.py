@@ -9,9 +9,9 @@ from media_manager.application.modules import ModulesKeeper, ModulesLoader
 class Application(QApplication):
     def __init__(self, app_location: Path):
         super().__init__()
-        self.keeper = ModulesKeeper()
         self.loader = ModulesLoader(app_location)
         self.window = Window()
+        self.keeper = ModulesKeeper(self.window)
 
     def add_modules_location(self, location: Path):
         self.loader.add_modules_location(location)
@@ -20,8 +20,6 @@ class Application(QApplication):
         self.loader.find_all()
         for module in self.loader.load_all():
             self.keeper.module_add(module)
-            if module.widget is not None:
-                self.window.side_bar.widget_add(module.widget)
 
     def start(self) -> int:
         self.load_modules()

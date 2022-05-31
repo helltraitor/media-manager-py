@@ -1,17 +1,24 @@
 import logging
 
 from media_manager.application.api.module import Module
+from media_manager.application.widgets.window import Window
 
 
 class ModulesKeeper:
-    def __init__(self):
+    def __init__(self, window: Window):
         self.__modules: dict[str, Module] = {}
+        self.__window = window
 
     def module_add(self, module: Module):
         if module.id in self.__modules:
             _double_module_add_warning(type(self).__name__, self.__modules[module.id], module)
             return
         self.__modules[module.id] = module
+
+        if module.widget is not None:
+            self.__window.side_bar.widget_add(module.widget)
+        if module.window is not None:
+            self.__window.main.window_add(module.window)
 
     def module_list(self) -> list[Module]:
         return list(self.__modules.values())
