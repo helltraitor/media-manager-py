@@ -31,3 +31,6 @@ class ModuleWidget(ABC):
     @abstractmethod
     def widget(self) -> Widget:
         pass
+
+    def type(self) -> str:
+        return "Other"
