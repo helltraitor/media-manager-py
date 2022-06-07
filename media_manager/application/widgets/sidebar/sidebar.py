@@ -1,16 +1,17 @@
 import logging
 
-from typing import Iterator
+from collections.abc import Iterable
 
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QVBoxLayout, QWidget
 
+from media_manager.application.api.events import EventPool
 from media_manager.application.api.events.module import (
     WidgetInstalledEvent,
     WidgetUninstalledEvent
 )
 
-from media_manager.application.api.module import ModuleWidget
+from media_manager.application.api.module import Module
 
 from .listeners import SideBarWidgetFocusListener
 from .other import OtherWidgets
@@ -19,9 +20,10 @@ from .widget import SideBarWidget
 
 
 class SideBar(QWidget):
-    def __init__(self):
+    def __init__(self, events: EventPool):
         super().__init__()
-        self.__widgets: list[SideBarWidget] = []
+        self.events = events
+        self.__modules: dict[str, tuple[Module, SideBarWidget]] = {}
         # GUI
         self.__other_widgets = OtherWidgets()
         self.__system_widgets = SystemWidgets()
@@ -38,26 +40,22 @@ class SideBar(QWidget):
         # Self
         self.setFixedWidth(84)
 
-    def widgets(self) -> Iterator[SideBarWidget]:
-        return iter(self.__widgets)
+    def items(self) -> Iterable[tuple[Module, SideBarWidget]]:
+        return self.__modules.values()
 
-    def widget_add(self, module: ModuleWidget):
-        if self.widget_exists(module):
+    def module_add(self, module: Module):
+        if module.id() in self.__modules:
             logging.warning(f'{type(self).__name__}: Attempting to add already added module widget: {type(module)}')
             return
 
-        widget = SideBarWidget(module)
-        self.__widgets.append(widget)
-
-        if module.type() == "System":
-            self.__system_widgets.widget_add(module)
+        bar_widget = SideBarWidget(module.widget())
+        if module.widget().type() == "System":
+            self.__system_widgets.widget_add(bar_widget)
         else:
-            self.__other_widgets.widget_add(module)
+            self.__other_widgets.widget_add(bar_widget)
+        self.__modules[module.id()] = (module, bar_widget)
 
         # Event listeners
-        module.events.subscribe(SideBarWidgetFocusListener(self, widget))
+        module.widget().events.subscribe(SideBarWidgetFocusListener(self, bar_widget))
         # Event announces
-        module.events.announce(WidgetInstalledEvent(module))
-
-    def widget_exists(self, module: ModuleWidget) -> bool:
-        return module in map(SideBarWidget.module, self.__widgets)
+        module.widget().events.announce(WidgetInstalledEvent(module.widget()))

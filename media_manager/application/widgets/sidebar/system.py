@@ -5,8 +5,6 @@ from typing import Iterator
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QVBoxLayout, QSizePolicy, QWidget
 
-from media_manager.application.api.module import ModuleWidget
-
 from .widget import SideBarWidget
 
 
@@ -27,14 +25,11 @@ class SystemWidgets(QWidget):
     def widgets(self) -> Iterator[SideBarWidget]:
         return iter(self.__widgets)
 
-    def widget_add(self, module: ModuleWidget):
-        if self.widget_exists(module):
-            logging.warning(f'{type(self).__name__}: Attempting to add already added module widget: {type(module)}')
+    def widget_add(self, bar_widget: SideBarWidget):
+        if bar_widget in self.__widgets:
+            logging.warning(
+                f'{type(self).__name__}: Attempting to add already added module widget: {type(bar_widget.module())}')
             return
 
-        widget = SideBarWidget(module)
-        self.__widgets.append(widget)
-        self.__layout.addWidget(widget, alignment=Qt.AlignBottom)
-
-    def widget_exists(self, module: ModuleWidget) -> bool:
-        return module in map(SideBarWidget.module, self.__widgets)
+        self.__widgets.append(bar_widget)
+        self.__layout.addWidget(bar_widget, alignment=Qt.AlignBottom)
