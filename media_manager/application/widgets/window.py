@@ -3,7 +3,10 @@ from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QHBoxLayout, QWidget
 
 from media_manager.application.constants import APPLICATION_ICON, APPLICATION_NAME
+from media_manager.application.api.events import EventPool
+from media_manager.application.api.module import Module
 
+from .listeners import ModuleFocusListener
 from .main import MainWidget
 from .sidebar import SideBar
 
@@ -11,19 +14,30 @@ from .sidebar import SideBar
 class Window(QWidget):
     def __init__(self):
         super().__init__()
-        self.icon = QIcon(APPLICATION_ICON)
+        self.events = EventPool()
+        self.__icon = QIcon(APPLICATION_ICON)
 
-        self.h_layout = QHBoxLayout(self)
-        self.side_bar = SideBar()
-        self.main = MainWidget()
+        self.__layout = QHBoxLayout(self)
+        self.__side = SideBar(self.events)
+        self.__main = MainWidget(self.events)
         self.__setup()
 
     def __setup(self):
         # Layout
-        self.h_layout.setAlignment(Qt.AlignLeft)
-        self.h_layout.setContentsMargins(0, 0, 0, 0)
-        self.h_layout.addWidget(self.side_bar)
+        self.__layout.setAlignment(Qt.AlignLeft)
+        self.__layout.setContentsMargins(0, 0, 0, 0)
+        self.__layout.addWidget(self.__side)
+        self.__layout.addWidget(self.__main)
         # Window
-        self.setWindowIcon(self.icon)
+        self.setWindowIcon(self.__icon)
         self.setWindowTitle(APPLICATION_NAME)
         self.setGeometry(*max(self.geometry().getCoords(), (50, 50, 200, 200), key=sum))
+
+    def module_add(self, module: Module):
+        if module.widget() is not None:
+            self.__side.module_add(module)
+        if module.window() is not None:
+            self.__main.module_add(module)
+
+        if (module.widget() and module.window()) is not None:
+            module.widget().events.subscribe(ModuleFocusListener(self.__main))
