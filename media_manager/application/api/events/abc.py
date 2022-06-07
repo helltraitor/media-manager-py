@@ -10,7 +10,6 @@ class ABCEvent(ABC):
         cls.bases = staticmethod(lambda: bases)
 
 
-# TODO:
 class Event(ABCEvent):
     @staticmethod
     def bases() -> frozenset[Type["Event"]]:
