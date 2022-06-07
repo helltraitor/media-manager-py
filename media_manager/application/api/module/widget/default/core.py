@@ -50,7 +50,6 @@ class ModuleDefaultWidget(ModuleWidget):
         self.__setup()
 
     def __setup(self):
-        pass
         self.events.subscribe(DefaultBackgroundListener(self))
         self.events.subscribe(DefaultBackgroundPaintEventListener(self))
 
