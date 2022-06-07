@@ -9,18 +9,14 @@ class Module:
         self.__widget = widget
         self.__window = window
 
-    @property
     def id(self) -> str:
-        return self.meta.id()
+        return self.__meta.id()
 
-    @property
     def meta(self) -> ModuleMeta:
         return self.__meta
 
-    @property
     def widget(self) -> ModuleWidget | None:
         return self.__widget
 
-    @property
     def window(self) -> ModuleWindow | None:
         return self.__window
