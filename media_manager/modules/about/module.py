@@ -6,6 +6,9 @@ from media_manager.application.api.module.loader import ModuleLoader
 from media_manager.application.api.module import Module
 from media_manager.application.api.module.meta import ModuleMeta
 from media_manager.application.api.module.widget import ModuleDefaultWidget
+from media_manager.application.api.module.window import ModuleWindow
+
+from .window import QWidget, Window
 
 
 class ProtectedModuleMeta(ModuleMeta):
@@ -38,6 +41,11 @@ class ProtectedModuleWidget(ModuleDefaultWidget):
         return "System"
 
 
+class ProtectedModuleWindow(ModuleWindow):
+    def window(self) -> QWidget:
+        return Window()
+
+
 class PublicModuleLoader(ModuleLoader):
     def __init__(self):
         super().__init__()
@@ -48,7 +56,7 @@ class PublicModuleLoader(ModuleLoader):
         return version.split(".", 3)[0] == "0"
 
     def load(self) -> Module:
-        return Module(ProtectedModuleMeta(), ProtectedModuleWidget(), None)
+        return Module(ProtectedModuleMeta(), ProtectedModuleWidget(), ProtectedModuleWindow())
 
     def loading_priority(self) -> float | None:
         return 0.05
