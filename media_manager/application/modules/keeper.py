@@ -10,15 +10,13 @@ class ModulesKeeper:
         self.__window = window
 
     def module_add(self, module: Module):
-        if module.id in self.__modules:
-            _double_module_add_warning(type(self).__name__, self.__modules[module.id], module)
+        if module.id() in self.__modules:
+            _double_module_add_warning(type(self).__name__, self.__modules[module.id()], module)
             return
-        self.__modules[module.id] = module
 
-        if module.widget is not None:
-            self.__window.side_bar.widget_add(module.widget)
-        if module.window is not None:
-            self.__window.main.window_add(module.window)
+        self.__modules[module.id()] = module
+        if (module.widget() or module.window()) is not None:
+            self.__window.module_add(module)
 
     def module_list(self) -> list[Module]:
         return list(self.__modules.values())
@@ -32,14 +30,14 @@ class ModulesKeeper:
 # Separated warning function to reduce cognitive load
 def _double_module_add_warning(cls_name: str, old: Module, new: Module):
     old_module_meta = {
-        "meta": old.meta,
-        "name": old.meta.name() if old.meta is not None else "Error",
-        "version": old.meta.version() if old.meta is not None else "Error",
+        "meta": old.meta(),
+        "name": old.meta().name() if old.meta() is not None else "Error",
+        "version": old.meta().version() if old.meta() is not None else "Error",
     }
     new_module_meta = {
-        "meta": new.meta,
-        "name": new.meta.name() if new.meta is not None else "Error",
-        "version": new.meta.version() if new.meta is not None else "Error",
+        "meta": new.meta(),
+        "name": new.meta().name() if new.meta() is not None else "Error",
+        "version": new.meta().version() if new.meta() is not None else "Error",
     }
     logging.warning(f"{cls_name}: Attempting to override already loaded module with id `{old.id}`", extra={
         "new_module_meta": new_module_meta,
