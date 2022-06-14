@@ -1,3 +1,5 @@
+from media_manager.application.api.messages import MessageClient
+
 from .meta import ModuleMeta
 from .widget import ModuleWidget
 from .window import ModuleWindow
@@ -6,9 +8,11 @@ from .window import ModuleWindow
 class Module:
     def __init__(self,
                  meta: ModuleMeta,
+                 client: MessageClient | None,
                  widget: ModuleWidget | None,
                  window: ModuleWindow | None):
         self.__meta = meta
+        self.__client = client
         self.__widget = widget
         self.__window = window
 
@@ -22,6 +26,9 @@ class Module:
 
     def meta(self) -> ModuleMeta:
         return self.__meta
+
+    def client(self) -> MessageClient | None:
+        return self.__client
 
     def widget(self) -> ModuleWidget | None:
         return self.__widget
