@@ -56,7 +56,7 @@ class PublicModuleLoader(ModuleLoader):
         return version.split(".", 3)[0] == "0"
 
     def load(self) -> Module:
-        return Module(ProtectedModuleMeta(), ProtectedModuleWidget(), ProtectedModuleWindow())
+        return Module(ProtectedModuleMeta(), None, ProtectedModuleWidget(), ProtectedModuleWindow())
 
     def loading_priority(self) -> float | None:
         return 0.1

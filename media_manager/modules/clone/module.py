@@ -1,10 +1,8 @@
 from random import randint
 
-from media_manager.application.api.module.loader import ModuleLoader
-from media_manager.application.api.module import Module
-from media_manager.application.api.module.meta import ModuleMeta
+from media_manager.application.api.messages import MessageClient
+from media_manager.application.api.module import ModuleLoader, Module, ModuleMeta, ModuleWindow
 from media_manager.application.api.module.widget import ModuleDefaultWidget
-from media_manager.application.api.module.window import ModuleWindow
 
 from .window import QWidget, Window
 
@@ -16,13 +14,17 @@ class ProtectedModuleMeta(ModuleMeta):
         super().__init__()
 
     def id(self) -> str:
-        return f"{self.name()} {self.version()}"
+        return f"Clone{ID}"
 
     def name(self) -> str:
-        return str(ID)
+        return "Clone"
 
     def version(self) -> str:
         return "0.0.1"
+
+
+class ProtectedModuleClient(MessageClient):
+    pass
 
 
 class ProtectedModuleWidget(ModuleDefaultWidget):
@@ -35,7 +37,7 @@ class ProtectedModuleWidget(ModuleDefaultWidget):
 
 class ProtectedModuleWindow(ModuleWindow):
     def window(self) -> QWidget:
-        return Window(str(ID))
+        return Window(self, str(ID))
 
 
 class PublicModuleLoader(ModuleLoader):
@@ -47,7 +49,10 @@ class PublicModuleLoader(ModuleLoader):
         return version.split(".", 3)[0] == "0"
 
     def load(self) -> Module:
-        return Module(ProtectedModuleMeta(), ProtectedModuleWidget(), ProtectedModuleWindow())
+        return Module(ProtectedModuleMeta(),
+                      ProtectedModuleClient(f'Clone{ID}', {'name': 'Clone', 'id': f'Clone{ID}'}),
+                      ProtectedModuleWidget(),
+                      ProtectedModuleWindow())
 
     def loading_priority(self) -> float | None:
         return 1.0
