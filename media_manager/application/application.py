@@ -1,3 +1,5 @@
+import logging
+
 from pathlib import Path
 
 from PySide2.QtWidgets import QApplication
@@ -25,9 +27,16 @@ class ApplicationClient(MessageClient):
 class Application(QApplication):
     def __init__(self, app_location: Path):
         super().__init__()
-        self.loader = ModulesLoader(app_location)
         self.window = Window()
-        self.keeper = ModulesKeeper(self.window)
+        self.loader = ModulesLoader(app_location)
+        self.server = MessageServer()
+        self.keeper = ModulesKeeper(self.server, self.window)
+        self.__setup()
+
+    def __setup(self):
+        # Anonymous application client
+        client = ApplicationClient(self.keeper)
+        client.connect(self.server)
 
     def add_modules_location(self, location: Path):
         self.loader.add_modules_location(location)
