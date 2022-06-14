@@ -2,6 +2,7 @@ import logging
 
 from pathlib import Path
 
+from PySide2.QtCore import QTimerEvent
 from PySide2.QtWidgets import QApplication
 
 from media_manager.application.api.messages import MessageServer, MessageClient, Message, Reply
@@ -41,6 +42,10 @@ class Application(QApplication):
     def add_modules_location(self, location: Path):
         self.loader.add_modules_location(location)
 
+    def timerEvent(self, event: QTimerEvent):
+        self.server.process()
+        event.accept()
+
     def load_modules(self):
         self.loader.find_all()
         for module in self.loader.load_all():
@@ -49,4 +54,5 @@ class Application(QApplication):
     def start(self) -> int:
         self.load_modules()
         self.window.show()
+        self.startTimer(0)
         return self.exec_()
