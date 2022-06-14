@@ -4,10 +4,18 @@ from .window import ModuleWindow
 
 
 class Module:
-    def __init__(self, meta: ModuleMeta, widget: ModuleWidget | None, window: ModuleWindow | None):
+    def __init__(self,
+                 meta: ModuleMeta,
+                 widget: ModuleWidget | None,
+                 window: ModuleWindow | None):
         self.__meta = meta
         self.__widget = widget
         self.__window = window
+
+        if widget is not None:
+            widget.link(self)
+        if window is not None:
+            window.link(self)
 
     def id(self) -> str:
         return self.__meta.id()
