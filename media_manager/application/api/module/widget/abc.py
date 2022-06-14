@@ -1,10 +1,17 @@
+from weakref import ReferenceType, ref
+
 from abc import ABC, abstractmethod
+from typing import Type
 
 from PySide2.QtCore import QEvent
 from PySide2.QtWidgets import QWidget
 
 from media_manager.application.api.events import EventPool
 from media_manager.application.api.events.gui import GuiEvent
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..module import Module
 
 
 class Widget(QWidget):
@@ -26,7 +33,13 @@ class ModuleWidget(ABC):
     def __init__(self):
         # Safety for sharing
         self.events = EventPool()
+        self.__module: ReferenceType["Module"] | None = None
 
+    def link(self, module: "Module"):
+        self.__module = ref(module)
+
+    def module(self) -> Type["Module"] | None:
+        return self.__module()
 
     def type(self) -> str:
         return "Other"
