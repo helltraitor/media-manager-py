@@ -1,12 +1,14 @@
 import logging
 
+from media_manager.application.api.messages import MessageServer
 from media_manager.application.api.module import Module
 from media_manager.application.widgets.window import Window
 
 
 class ModulesKeeper:
-    def __init__(self, window: Window):
+    def __init__(self, server: MessageServer, window: Window):
         self.__modules: dict[str, Module] = {}
+        self.__server = server
         self.__window = window
 
     def module_add(self, module: Module):
@@ -15,8 +17,14 @@ class ModulesKeeper:
             return
 
         self.__modules[module.id()] = module
+        if module.client() is not None:
+            module.client().connect(self.__server)
+
         if (module.widget() or module.window()) is not None:
             self.__window.module_add(module)
+
+    def module_contains(self, id: str) -> bool:
+        return id in self.__modules
 
     def module_list(self) -> list[Module]:
         return list(self.__modules.values())
