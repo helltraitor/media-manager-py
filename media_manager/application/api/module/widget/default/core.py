@@ -15,8 +15,8 @@ from .listeners import DefaultBackgroundListener, DefaultBackgroundPaintEventLis
 
 
 class DefaultWidget(FocusableWidget, HoverableWidget):
-    def __init__(self, module: ModuleWidget, icon: QIcon, title: str):
-        super().__init__(module)
+    def __init__(self, widget: ModuleWidget, icon: QIcon, title: str):
+        super().__init__(widget)
         # Data
         self.painter = ModuleWidgetNoneBackgroundPainter
         # GUI
@@ -40,7 +40,7 @@ class DefaultWidget(FocusableWidget, HoverableWidget):
 
     def paintEvent(self, event: QPaintEvent):
         super().paintEvent(event)
-        self.module.events.announce(GuiEvent(event, self))
+        self.widget().events.announce(GuiEvent(event, self))
 
 
 class ModuleDefaultWidget(ModuleWidget):
