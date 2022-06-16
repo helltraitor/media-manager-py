@@ -30,15 +30,24 @@ class Window(QWidget):
         # BUTTON
         self.__clone_up.setAutoRepeat(True)
         self.__clone_up.clicked.connect(
-            lambda: change_value(client, self.__id, int(self.__clone_value.text()) + 1) or fetch_value(client, self.__id, self.__clone_value))
+            lambda: change_value(client, self.__id, self.__clone_value, 1))
         self.__clone_down.setAutoRepeat(True)
         self.__clone_down.clicked.connect(
-            lambda: change_value(client, self.__id, int(self.__clone_value.text()) - 1) or fetch_value(client, self.__id, self.__clone_value))
+            lambda: change_value(client, self.__id, self.__clone_value, -1))
 
 
-def change_value(client, id, value):
-    client.send({"name": "Settings"},
-                Message({"action": "set", "key": f"{id}-value", "value": str(value)}))
+def change_value(client, id, label, delta):
+    def update(value):
+        # then change fresh value
+        client.send({"name": "Settings"}, CallbackMessage(
+            # and update label
+            lambda reply: fetch_value(client, id, label),
+            {"action": "update", "key": f"{id}-value", "value": str(value)}))
+    # get fresh value
+    client.send({"name": "Settings"}, CallbackMessage(
+        # update after getting value
+        lambda reply: update(int(reply.content().get("value")) + delta), {
+            "action": "get", "key": f"{id}-value"}))
 
 
 def fetch_value(client, id, label):
