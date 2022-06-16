@@ -47,7 +47,7 @@ def _double_module_add_warning(cls_name: str, old: Module, new: Module):
         "name": new.meta().name() if new.meta() is not None else "Error",
         "version": new.meta().version() if new.meta() is not None else "Error",
     }
-    logging.warning(f"{cls_name}: Attempting to override already loaded module with id `{old.id}`", extra={
+    logging.warning(f"{cls_name}: Attempting to override already loaded module with id `{old.id()}`", extra={
         "new_module_meta": new_module_meta,
         "old_module_meta": old_module_meta,
     })
