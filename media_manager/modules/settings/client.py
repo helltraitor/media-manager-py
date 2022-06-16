@@ -48,4 +48,16 @@ class ProtectedModuleClient(MessageClient):
             if not self.__storage.delete(key):
                 return Reply({"status": "ERROR", "reason": "No such key"})
             return Reply({"status": "OK"})
+        if action == "update":
+            key = message.content().get("key", None)
+            if key is None:
+                return Reply({"status": "ERROR", "reason": "Key was not set"})
+            value = message.content().get("value", None)
+            if value is None:
+                return Reply({"status": "ERROR", "reason": "Value was not set"})
+            default = message.content().get("default", None)
+            returned = self.__storage.update(key, value, default)
+            if returned is None:
+                return Reply({"status": "OK"})
+            return Reply({"status": "OK", "value": returned})
         return Reply({"status": "ERROR", "reason": "Unexpected error"})

@@ -28,6 +28,11 @@ class Storage:
             return True
         return False
 
+    def update(self, key: str, value: str, default: str | None = None) -> str | None:
+        default = self.__online.pop(key, default)
+        self.__online[key] = value
+        self.notify("update")
+        return default
 
     def notify(self, action: str):
         for callback in self.__callbacks.get(action, ()):
