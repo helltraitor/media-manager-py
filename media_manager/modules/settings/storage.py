@@ -9,6 +9,10 @@ class Storage:
         self.__online = self.ONLINE_STORAGE
         self.__callbacks = self.CALLBACKS
 
+    def all(self) -> dict[str, str]:
+        self.notify("all")
+        return self.__online.copy()
+
     def get(self, key: str, default: str | None = None) -> str | None:
         self.notify("get")
         return self.__online.get(key, default)
@@ -24,9 +28,6 @@ class Storage:
             return True
         return False
 
-    def all(self) -> dict[str, str]:
-        self.notify("all")
-        return self.__online.copy()
 
     def notify(self, action: str):
         for callback in self.__callbacks.get(action, ()):
