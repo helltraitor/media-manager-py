@@ -54,7 +54,7 @@ class ModuleDefaultWidget(ModuleWidget):
         self.events.subscribe(DefaultBackgroundPaintEventListener(self))
 
     def icon(self) -> str:
-        return str(Path(__file__).parent.parent.parent.parent.parent.parent / "resources" / "carol-liao-solve-icon")
+        return str(Path(__file__).parent.parent.parent.parent.parent.parent / "resources" / "carol-liao-solve-icon.svg")
 
     @abstractmethod
     def title(self) -> str:
