@@ -45,8 +45,7 @@ class ProtectedModuleClient(MessageClient):
             key = message.content().get("key", None)
             if key is None:
                 return Reply({"status": "ERROR", "reason": "Key was not set"})
-            returned = self.__storage.delete(key)
-            if returned is None:
+            if not self.__storage.delete(key):
                 return Reply({"status": "ERROR", "reason": "No such key"})
             return Reply({"status": "OK"})
         return Reply({"status": "ERROR", "reason": "Unexpected error"})

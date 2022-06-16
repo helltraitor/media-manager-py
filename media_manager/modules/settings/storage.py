@@ -17,10 +17,12 @@ class Storage:
         self.__online[key] = value
         self.notify("set")
 
-    def delete(self, key: str, default: str | None = None) -> str | None:
-        value = self.__online.pop(key, default)
-        self.notify("delete")
-        return value
+    def delete(self, key: str) -> bool:
+        if key in self.__online:
+            del self.__online[key]
+            self.notify("delete")
+            return True
+        return False
 
     def all(self) -> dict[str, str]:
         self.notify("all")
