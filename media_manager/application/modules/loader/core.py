@@ -1,53 +1,50 @@
+import inspect
 import logging
 
 from pathlib import Path
-from typing import Type, Generator
+from typing import Generator, Type
 
-from media_manager.application.api.module import Module, ModuleLoader
+from media_manager.application.api.context import Context
+from media_manager.application.api.module import PrimitiveModule, ModuleLoader
 from media_manager.application.constants import APPLICATION_MODULE_API_VERSION
-
 
 from .wrappers import Import, ImportLocations
 
 
-class ModulesLoader:
-    def __init__(self, app_location: Path):
-        self.app_location = app_location
-        self.modules_locations: list[Path] = []
-        self.modules_loaders: list[Type[ModuleLoader]] = []
+class Loader:
+    @staticmethod
+    def __list_loaders_from(location: Path) -> list[Type[ModuleLoader]]:
+        names = (path.parts[-1] for path in location.iterdir() if path.is_dir())
+        modules = filter(None, (Import(name).make() for name in names))
+        similar = (module.PublicModuleLoader for module in modules if hasattr(module, "PublicModuleLoader"))
+        loaders = (loader for loader in similar if inspect.isclass(loader) and issubclass(loader, ModuleLoader))
+        return list(loaders)
 
-    def add_modules_location(self, location: Path):
-        if not location.is_dir():
-            logging.warning(f'{type(self).__name__}: Indicated location is not a directory: "{location}"')
-            return
-        self.modules_locations.append(location)
+    @staticmethod
+    def build_load_sequence(loaders: list[Type[ModuleLoader]]) -> list[Type[ModuleLoader]]:
+        return sorted(loaders, key=lambda ld: ld.loading_priority() or 1)
 
-    def find_all(self):
-        self.modules_loaders.clear()
+    @staticmethod
+    def find_from(*locations: Path) -> list[Type[ModuleLoader]]:
+        with ImportLocations(*map(str, locations)):
+            loaders: list[Type[ModuleLoader]] = []
+            for location in locations:
+                loaders.extend(Loader.__list_loaders_from(location))
+            return loaders
 
-        with ImportLocations(str(self.app_location), *(str(location) for location in self.modules_locations)):
-            for location in self.modules_locations:
-                # Find all modules names in indicated import locations
-                modules_names = (path.parts[-1] for path in location.iterdir() if path.is_dir())
-                # Import these modules
-                modules_objects = (module.make() for module in map(Import, modules_names))
-                modules_objects = (module for module in modules_objects if module is not None)
-                # Get public api class or default None singleton
-                modules_loaders = (getattr(module, "PublicModuleLoader", object) for module in modules_objects)
-                # Filter loaders by subclass check (all loaders must be subclass of ModuleLoader)
-                modules_loaders = tuple(loader for loader in modules_loaders if issubclass(loader, ModuleLoader))
-                self.modules_loaders.extend(modules_loaders)
-
-    def load_all(self) -> Generator[Module, None, None]:
-        loaders = [loader() for loader in self.modules_loaders]
-        for loader in sorted(loaders, key=lambda lod: lod.loading_priority() or 1):
-            if not loader.is_api_supported(APPLICATION_MODULE_API_VERSION):
-                logging.error(' '.join((
-                    f'{type(self).__name__}:',
-                    f'Unable to load module that is not support {APPLICATION_MODULE_API_VERSION} api version.')))
-                continue
-
+    @staticmethod
+    def load_from(*locations: Path, context: Context | None = None) -> Generator[PrimitiveModule, None, None]:
+        loaders = Loader.find_from(*locations)
+        loaders = Loader.build_load_sequence(loaders)
+        for t_loader in loaders:
             try:
-                yield loader.load()
-            except Exception as exc:
-                logging.error(f'{type(self).__name__}: Unable to load module due to unexpected error', exc_info=exc)
+                o_loader = t_loader()
+                if not o_loader.is_api_supported(APPLICATION_MODULE_API_VERSION):
+                    logging.warning(
+                        "%s: Application module api version is not supported for module. Skipped...",
+                        Loader.__name__)
+                    continue
+                yield o_loader.load().build(context=(context or Context()))
+            except Exception as exc:  # pylint: disable=locally-disabled, broad-except
+                logging.error("%s: Unable to load module. Skipped...",
+                              Loader.__name__, exc_info=exc)

@@ -1,1 +1,1 @@
-from .core import ModulesLoader
+from .core import Loader

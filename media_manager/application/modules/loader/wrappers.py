@@ -1,8 +1,8 @@
 import logging
+import sys
 
 from importlib import import_module
 from types import ModuleType
-from sys import path as sys_path
 
 
 class Import:
@@ -15,10 +15,9 @@ class Import:
         if self.__module is None:
             try:
                 self.__module = self.unwrap()
-            except Exception as exc:
-                logging.error(
-                    f'{type(self).__name__}: Unable to import package with a module due to unexpected error',
-                    exc_info=exc)
+            except Exception as exc:  # pylint: disable=locally-disabled, broad-except
+                logging.error("%s: Unable to import package with a module due to unexpected error",
+                              type(self).__name__, exc_info=exc)
         return self.__module
 
     def unwrap(self) -> ModuleType:
@@ -27,7 +26,7 @@ class Import:
 
 class ImportLocations:
     def __init__(self, *locations: str):
-        self.system_locations: list[str] = sys_path
+        self.system_locations: list[str] = sys.path
         self.import_locations: dict[str, bool] = {
             location: location in self.system_locations for location in locations
         }
