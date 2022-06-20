@@ -1,5 +1,3 @@
+from .abc import Module, PrimitiveModule, DeferrableModule, SociableModule, ViewableModule
+from .factory import ModuleFactory
 from .loader import ModuleLoader
-from .module import Module
-from .meta import ModuleMeta
-from .widget import ModuleWidget
-from .window import ModuleWindow
