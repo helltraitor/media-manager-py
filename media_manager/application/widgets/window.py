@@ -4,8 +4,8 @@ from PySide2.QtWidgets import QHBoxLayout, QWidget
 
 from media_manager.application.constants import APPLICATION_ICON, APPLICATION_NAME
 from media_manager.application.api.events import EventPool
-from media_manager.application.api.module import Module
 
+from .abc import SupportableModule
 from .listeners import ModuleFocusListener
 from .main import MainWidget
 from .sidebar import SideBar
@@ -33,11 +33,7 @@ class Window(QWidget):
         self.setWindowTitle(APPLICATION_NAME)
         self.setGeometry(*max(self.geometry().getCoords(), (50, 50, 200, 200), key=sum))
 
-    def module_add(self, module: Module):
-        if module.widget() is not None:
-            self.__side.module_add(module)
-        if module.window() is not None:
-            self.__main.module_add(module)
-
-        if (module.widget() and module.window()) is not None:
-            module.widget().events.subscribe(ModuleFocusListener(self.__main))
+    def append(self, module: SupportableModule):
+        module.widget().events().subscribe(ModuleFocusListener(self.__main))
+        self.__main.append(module)
+        self.__side.append(module)

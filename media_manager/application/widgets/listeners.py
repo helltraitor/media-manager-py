@@ -18,6 +18,6 @@ class ModuleFocusListener(EventListener):
     def handle(self, event: Event):
         if not isinstance(event, WidgetFocusedEvent):
             return
-        for (module, layer) in self.__main.modules():
-            if module.widget() is event.module:
-                self.__main.module_show(module)
+        for module, _ in self.__main.list():
+            if module is event.module():
+                self.__main.choose(module)

@@ -1,15 +1,14 @@
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QVBoxLayout, QWidget
 
-from media_manager.application.api.module.widget import ModuleWidget
+from media_manager.application.api.module.components.widget.abc import Widget
 
 
 class SideBarWidget(QWidget):
-    def __init__(self, module: ModuleWidget):
+    def __init__(self, widget: Widget):
         super().__init__()
         self.__layout = QVBoxLayout(self)
-        self.__module = module
-        self.__widget = module.widget()
+        self.__widget = widget
         # Setup
         self.__setup()
 
@@ -19,6 +18,3 @@ class SideBarWidget(QWidget):
         self.__layout.addWidget(self.__widget, alignment=Qt.AlignCenter)
         # Widget
         self.__widget.setFixedSize(72, 72)
-
-    def module(self) -> ModuleWidget:
-        return self.__module

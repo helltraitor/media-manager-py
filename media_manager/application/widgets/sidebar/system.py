@@ -1,17 +1,16 @@
 import logging
 
-from typing import Iterator
-
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QVBoxLayout, QSizePolicy, QWidget
 
 from .widget import SideBarWidget
+from ..abc import SupportableModule
 
 
 class SystemWidgets(QWidget):
     def __init__(self):
         super().__init__()
-        self.__widgets: list[SideBarWidget] = []
+        self.__widgets: dict[str, SideBarWidget] = {}
         self.__layout = QVBoxLayout(self)
         # Setup
         self.__setup()
@@ -22,14 +21,14 @@ class SystemWidgets(QWidget):
         # Self
         self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
 
-    def widgets(self) -> Iterator[SideBarWidget]:
-        return iter(self.__widgets)
-
-    def widget_add(self, bar_widget: SideBarWidget):
-        if bar_widget in self.__widgets:
-            logging.warning(
-                f'{type(self).__name__}: Attempting to add already added module widget: {type(bar_widget.module())}')
+    def add(self, module: SupportableModule, widget: SideBarWidget):
+        id = module.meta().id()
+        if id in self.__widgets:
+            logging.warning("%s: Attempting to add already existed module widget: %s (%s)",
+                            type(self).__name__, module.meta().name(), module.meta().id())
             return
+        self.__widgets[id] = widget
+        self.__layout.addWidget(widget, alignment=Qt.AlignBottom)
 
-        self.__widgets.append(bar_widget)
-        self.__layout.addWidget(bar_widget, alignment=Qt.AlignBottom)
+    def list(self) -> list[SideBarWidget]:
+        return list(self.__widgets.values())

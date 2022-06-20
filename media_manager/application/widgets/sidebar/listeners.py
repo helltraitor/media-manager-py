@@ -23,8 +23,8 @@ class SideBarWidgetFocusListener(EventListener):
     def handle(self, event: Event):
         if not isinstance(event, WidgetFocusedEvent):
             return
-        for (module, bar_widget) in self.__sidebar.items():
+        for module, bar_widget in self.__sidebar.items():
             if bar_widget is self.__target:
-                self.__sidebar.events.announce(WidgetFocusedEvent(module))
+                self.__sidebar.events.announce(WidgetFocusedEvent(module))  # type: ignore
                 continue
-            module.widget().events.announce(WidgetUnfocusedEvent(module))
+            module.widget().events().announce(WidgetUnfocusedEvent(module))  # type: ignore
