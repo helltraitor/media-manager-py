@@ -1,2 +1,2 @@
-from .keeper import ModulesKeeper
-from .loader import ModulesLoader
+from .keeper import Keeper
+from .loader import Loader

@@ -1,53 +1,44 @@
 import logging
 
-from media_manager.application.api.messages import MessageServer
-from media_manager.application.api.module import Module
-from media_manager.application.widgets.window import Window
+from media_manager.application.api.module import PrimitiveModule
 
 
-class ModulesKeeper:
-    def __init__(self, server: MessageServer, window: Window):
-        self.__modules: dict[str, Module] = {}
-        self.__server = server
-        self.__window = window
+class Keeper:
+    def __init__(self):
+        self.__modules: dict[str, PrimitiveModule] = {}
 
-    def module_add(self, module: Module):
-        if module.id() in self.__modules:
-            _double_module_add_warning(type(self).__name__, self.__modules[module.id()], module)
+    def append(self, module: PrimitiveModule):
+        if module.meta().id() in self.__modules:
+            _double_add_warning(type(self).__name__, self.__modules[module.meta().id()], module)
             return
+        self.__modules[module.meta().id()] = module
 
-        self.__modules[module.id()] = module
-        if module.client() is not None:
-            module.client().connect(self.__server)
+    def contains(self, *, id: str | None = None, module: PrimitiveModule | None = None) -> bool:
+        if id is not None:
+            return id in self.__modules
+        if module is not None:
+            return module.meta().id() in self.__modules
+        raise ValueError("One of kwargs must be used: id or module")
 
-        if (module.widget() or module.window()) is not None:
-            self.__window.module_add(module)
-
-    def module_contains(self, id: str) -> bool:
-        return id in self.__modules
-
-    def module_list(self) -> list[Module]:
+    def list(self) -> list[PrimitiveModule]:
         return list(self.__modules.values())
 
-    def module_remove(self, module_id: str):
-        module = self.__modules.pop(module_id, None)
-        if module is None:
-            logging.error(f'{type(self).__name__}: Attempting to remove non-existing module with `{module_id}` id')
+    def remove(self, *, id: str | None = None, module: PrimitiveModule | None = None):
+        id = id or (module is not None and module.meta().id()) or None
+        if id is not None:
+            if self.__modules.pop(id, None) is None:
+                logging.error("%s: Attempting to remove non-existing module with id `%s`",
+                              type(self).__name__, id)
+            return
+        raise ValueError("One of kwargs must be used: id or module")
 
 
-# Separated warning function to reduce cognitive load
-def _double_module_add_warning(cls_name: str, old: Module, new: Module):
-    old_module_meta = {
-        "meta": old.meta(),
-        "name": old.meta().name() if old.meta() is not None else "Error",
-        "version": old.meta().version() if old.meta() is not None else "Error",
-    }
-    new_module_meta = {
-        "meta": new.meta(),
-        "name": new.meta().name() if new.meta() is not None else "Error",
-        "version": new.meta().version() if new.meta() is not None else "Error",
-    }
-    logging.warning(f"{cls_name}: Attempting to override already loaded module with id `{old.id()}`", extra={
-        "new_module_meta": new_module_meta,
-        "old_module_meta": old_module_meta,
-    })
+# Function was part of add method but was moved out for reducing cognitive load
+def _double_add_warning(cls: str, existed: PrimitiveModule, new: PrimitiveModule):
+    logging.warning("%s: Attempting to override already loaded module with id `%s`",
+                    cls, existed.meta().id(),
+                    extra={
+                        "existed_name": existed.meta().name(),
+                        "existed_version": existed.meta().version(),
+                        "new_name": new.meta().name(),
+                        "new_version": new.meta().id()})
