@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from .module import Module
+from .factory import ModuleBuilder
 
 
 class ModuleLoader(ABC):
@@ -9,8 +9,9 @@ class ModuleLoader(ABC):
         pass
 
     @abstractmethod
-    def load(self) -> Module:
+    def load(self) -> ModuleBuilder:
         pass
 
-    def loading_priority(self) -> float | None:
+    @staticmethod
+    def loading_priority() -> float | None:
         return None
