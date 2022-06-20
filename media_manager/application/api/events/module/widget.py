@@ -1,16 +1,15 @@
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from media_manager.application.api.module import ModuleWidget
+    from media_manager.application.api.module import ViewableModule
 
 from .core import ModuleEvent
 
 
 class ModuleWidgetEvent(ModuleEvent):
-    def __init__(self, module: "ModuleWidget"):
+    def __init__(self, module: "ViewableModule"):
         self.__module = module
 
-    @property
-    def module(self) -> "ModuleWidget":
+    def module(self) -> "ViewableModule":
         return self.__module
 
 

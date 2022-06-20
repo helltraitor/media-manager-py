@@ -9,11 +9,9 @@ class GuiEvent(Event):
         self.__reason = reason
         self.__target = target
 
-    @property
     def reason(self):
         return self.__reason
 
-    @property
     def target(self):
         return self.__target
 
