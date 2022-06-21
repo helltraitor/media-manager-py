@@ -4,12 +4,14 @@ from PySide2.QtCore import Qt, QEvent
 from PySide2.QtGui import QIcon, QPaintEvent, QMouseEvent
 from PySide2.QtWidgets import QLabel, QVBoxLayout
 
+from media_manager.application import utils
 from media_manager.application.api.events.gui import GuiEvent
 from media_manager.application.api.events.module.widget import (
     WidgetFocusedEvent,
     WidgetHoveredEvent,
     WidgetUnhoveredEvent
 )
+from media_manager.application.api.module import ViewableModule
 
 from .listeners import DefaultBackgroundListener, DefaultBackgroundPaintEventListener
 from .painters import ModuleWidgetNoneBackgroundPainter
@@ -46,15 +48,18 @@ class DefaultWidget(Widget):
     def mousePressEvent(self, event: QMouseEvent):
         super().mousePressEvent(event)
         if event.button() == Qt.LeftButton:
-            self.component().events().announce(WidgetFocusedEvent(self.component().module()))
+            if module := utils.dynamic_cast(self.component().module(), ViewableModule):
+                self.component().events().announce(WidgetFocusedEvent(module))
 
     def enterEvent(self, event: QEvent):
         super().enterEvent(event)
-        self.component().events().announce(WidgetHoveredEvent(self.component().module()))
+        if module := utils.dynamic_cast(self.component().module(), ViewableModule):
+            self.component().events().announce(WidgetHoveredEvent(module))
 
     def leaveEvent(self, event: QEvent):
         super().leaveEvent(event)
-        self.component().events().announce(WidgetUnhoveredEvent(self.component().module()))
+        if module := utils.dynamic_cast(self.component().module(), ViewableModule):
+            self.component().events().announce(WidgetUnhoveredEvent(module))
 
     def paintEvent(self, event: QPaintEvent):
         super().paintEvent(event)
