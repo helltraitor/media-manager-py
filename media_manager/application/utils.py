@@ -14,8 +14,14 @@ def name(entity: Any) -> str:
     raise RuntimeError(f"Entity {entity} has no name")
 
 
-def runtime_cast(inst: Any, guard: Type[T]) -> T:
+def critical_cast(inst: Any, guard: Type[T]) -> T:
     if isinstance(inst, guard):
         return inst
-    logging.error("%s: %s is not instance of %s", name(runtime_cast), name(inst), name(guard))
+    logging.error("%s: %s is not instance of %s", name(critical_cast), name(inst), name(guard))
     raise RuntimeError(f"{name(inst)} is not instance of {name(guard)}")
+
+
+def dynamic_cast(inst: Any, guard: Type[T]) -> T | None:
+    if isinstance(inst, guard):
+        return inst
+    return None
