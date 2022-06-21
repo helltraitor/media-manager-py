@@ -11,7 +11,6 @@ from media_manager.application.api.events.module.widget import (
     WidgetHoveredEvent,
     WidgetUnhoveredEvent
 )
-from media_manager.application.api.module import ViewableModule
 
 from .listeners import DefaultBackgroundListener, DefaultBackgroundPaintEventListener
 from .painters import ModuleWidgetNoneBackgroundPainter
@@ -46,17 +45,23 @@ class DefaultWidget(Widget):
         self.component().events().subscribe(DefaultBackgroundPaintEventListener(self))
 
     def mousePressEvent(self, event: QMouseEvent):
+        from media_manager.application.api.module.abc import ViewableModule
+
         super().mousePressEvent(event)
         if event.button() == Qt.LeftButton:
             if module := utils.dynamic_cast(self.component().module(), ViewableModule):
                 self.component().events().announce(WidgetFocusedEvent(module))
 
     def enterEvent(self, event: QEvent):
+        from media_manager.application.api.module.abc import ViewableModule
+
         super().enterEvent(event)
         if module := utils.dynamic_cast(self.component().module(), ViewableModule):
             self.component().events().announce(WidgetHoveredEvent(module))
 
     def leaveEvent(self, event: QEvent):
+        from media_manager.application.api.module.abc import ViewableModule
+
         super().leaveEvent(event)
         if module := utils.dynamic_cast(self.component().module(), ViewableModule):
             self.component().events().announce(WidgetUnhoveredEvent(module))
