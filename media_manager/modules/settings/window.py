@@ -1,7 +1,22 @@
-from typing import Callable
+from weakref import ReferenceType
 
-from PySide2.QtCore import Qt, QModelIndex, QEvent, QItemSelectionModel
-from PySide2.QtWidgets import QLabel, QListWidget, QSizePolicy, QVBoxLayout, QWidget, QLineEdit, QPushButton, QHBoxLayout, QAbstractItemView
+from PySide2.QtCore import QEvent, QItemSelectionModel, QModelIndex
+from PySide2.QtWidgets import (
+    QAbstractItemView,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QPushButton,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget
+)
+
+from media_manager.application.api.context import Context
+from media_manager.application.api.module.components.window import CWindow
+from media_manager.application.api.module.components.window.abc import Window
+from media_manager.application.api.module.features import FWindow
 
 from .storage import Storage
 
@@ -102,20 +117,20 @@ class TableWidget(QListWidget):
     def selectionCommand(self, index: QModelIndex, event: QEvent | None = None) -> QItemSelectionModel.SelectionFlags:
         if (index.row(), index.column()) < (0, 0):
             self.__edit.reset_editable()
-            return super().selectionCommand(index)
+            return super().selectionCommand(index, event)
         text = self.itemFromIndex(index).text()
         key, value, *_ = text.split(" :: ")
         self.__edit.set_editable(key[1:-1], value[1:-1])
-        return super().selectionCommand(index)
+        return super().selectionCommand(index, event)
 
     def refill(self):
         self.clear()
         self.addItems(tuple(f"`{key}` :: `{value}`" for key, value in self.__storage.all().items()))
 
 
-class Window(QWidget):
-    def __init__(self):
-        super().__init__()
+class SettingsWindow(Window):
+    def __init__(self, component: ReferenceType[CWindow]):
+        super().__init__(component)
         self.__title = QLabel()
         self.__edit = EditableSection()
         self.__table = TableWidget(self.__edit)
@@ -139,3 +154,12 @@ class Window(QWidget):
         self.__table.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         self.__layout.addSpacing(6)
         self.__layout.addWidget(self.__table)
+
+
+class CSettingsWindow(CWindow):
+    def __init__(self, context: Context):
+        super().__init__(context)
+        self.__window = SettingsWindow(ReferenceType(self))
+
+    def window(self) -> QWidget:
+        return self.__window

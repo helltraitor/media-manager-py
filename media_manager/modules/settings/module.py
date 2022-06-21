@@ -1,21 +1,16 @@
-import logging
+from media_manager.application.api.module.loader import ModuleLoader
+from media_manager.application.api.module.factory import ModuleFactory, ModuleBuilder
 
-from pathlib import Path
+from media_manager.application.api.module.components import CMetaInformation
+from media_manager.application.api.module.features import FMetaInformation
 
-from media_manager.application.api.module import ModuleLoader, Module, ModuleMeta, ModuleWindow
-from media_manager.application.api.module.widget import ModuleDefaultWidget
-
-from .client import ProtectedModuleClient
-from .window import QWidget, Window
+from .widget import CSettingsDefaultWidget, FDefaultWidget
+from .window import CSettingsWindow, FWindow
 
 
-class ProtectedModuleMeta(ModuleMeta):
-    def __init__(self):
-        super().__init__()
-        logging.info("Settings.ProtectedModuleMeta is successfully loaded")
-
+class CSettingsMetaInformation(CMetaInformation):
     def id(self) -> str:
-        return f"{self.name()} {self.version()}"
+        return f"{self.name()} ({self.version()})"
 
     def name(self) -> str:
         return "Settings"
@@ -24,37 +19,18 @@ class ProtectedModuleMeta(ModuleMeta):
         return "0.0.1"
 
 
-class ProtectedModuleWidget(ModuleDefaultWidget):
-    def __init__(self):
-        super().__init__()
-        logging.info("Settings.ProtectedModuleWidget is successfully loaded")
-
-    def icon(self) -> str:
-        return str(Path(__file__).parent / "resources" / "carol-liao-adjust-icon.svg")
-
-    def title(self) -> str:
-        return "Settings"
-
-    def type(self) -> str:
-        return "System"
-
-
-class ProtectedModuleWindow(ModuleWindow):
-    def window(self) -> QWidget:
-        return Window()
-
-
 class PublicModuleLoader(ModuleLoader):
-    def __init__(self):
-        super().__init__()
-        logging.info("Settings.ProtectedModuleLoader is successfully loaded")
-
     def is_api_supported(self, version: str) -> bool:
         # Checks major version (minor must provide back-compatibility)
         return version.split(".", 3)[0] == "0"
 
-    def load(self) -> Module:
-        return Module(ProtectedModuleMeta(), ProtectedModuleClient(), ProtectedModuleWidget(), ProtectedModuleWindow())
+    def load(self) -> ModuleBuilder:
+        return (ModuleFactory()
+                .install_component(FMetaInformation, CSettingsMetaInformation)
+                .install_component(FDefaultWidget, CSettingsDefaultWidget)
+                .install_component(FWindow, CSettingsWindow)
+                .assemble())
 
-    def loading_priority(self) -> float | None:
+    @staticmethod
+    def loading_priority() -> float | None:
         return 0.1
