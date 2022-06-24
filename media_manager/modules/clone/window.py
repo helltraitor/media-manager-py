@@ -1,16 +1,19 @@
+from weakref import ReferenceType
+
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QPushButton, QLabel, QVBoxLayout, QWidget
+from PySide2.QtWidgets import QPushButton, QLabel, QVBoxLayout
 
+from media_manager.application.api.context import Context
 from media_manager.application.api.messages import Message, CallbackMessage
-from media_manager.application.api.module import ModuleWindow
+from media_manager.application.api.module.components import CWindow
+from media_manager.application.api.module.components.window.abc import Window
+from media_manager.application.api.module.features import FWindow
 
 
-class Window(QWidget):
-    def __init__(self, window: ModuleWindow, id_: str):
-        super().__init__()
-        self.__window = window
-        self.__id = id_
-        self.__clone_title = QLabel(f'Clone #{self.__id}')
+class CloneWindow(Window):
+    def __init__(self, component: ReferenceType[CWindow]):
+        super().__init__(component)
+        self.__clone_title = QLabel(f'Clone #{self.component().id()}')
         self.__clone_up = QPushButton("^^^")
         self.__clone_value = QLabel("0")
         self.__clone_down = QPushButton("vvv")
@@ -25,15 +28,29 @@ class Window(QWidget):
         self.__layout.addWidget(self.__clone_value, alignment=Qt.AlignTop)
         self.__layout.addWidget(self.__clone_down, alignment=Qt.AlignTop)
         # INIT SETTING
-        client = self.__window.module().client()
-        client.send({"name": "Settings"}, Message({"action": "set", "key": f"{self.__id}-value", "value": "0"}))
+        # TODO: RECOVER CLIENT
+        # client = self.__window.module().client()
+        # client.send({"name": "Settings"}, Message({"action": "set", "key": f"{self.__id}-value", "value": "0"}))
         # BUTTON
         self.__clone_up.setAutoRepeat(True)
-        self.__clone_up.clicked.connect(
-            lambda: change_value(client, self.__id, self.__clone_value, 1))
+        # self.__clone_up.clicked.connect(
+        #     lambda: change_value(client, self.__id, self.__clone_value, 1))
         self.__clone_down.setAutoRepeat(True)
-        self.__clone_down.clicked.connect(
-            lambda: change_value(client, self.__id, self.__clone_value, -1))
+        # self.__clone_down.clicked.connect(
+        #     lambda: change_value(client, self.__id, self.__clone_value, -1))
+
+
+class CCloneWindow(CWindow):
+    def __init__(self, context: Context):
+        super().__init__(context)
+        self.__context = context
+        self.__window = CloneWindow(ReferenceType(self))
+
+    def id(self) -> str:
+        return self.__context.unwrap('id', str)
+
+    def window(self) -> Window:
+        return self.__window
 
 
 def change_value(client, id, label, delta):

@@ -1,58 +1,41 @@
 from random import randint
 
-from media_manager.application.api.messages import MessageClient
-from media_manager.application.api.module import ModuleLoader, Module, ModuleMeta, ModuleWindow
-from media_manager.application.api.module.widget import ModuleDefaultWidget
+from media_manager.application.api.context import Context
+from media_manager.application.api.module.loader import ModuleLoader
+from media_manager.application.api.module.factory import ModuleFactory, ModuleBuilder
 
-from .window import QWidget, Window
+from media_manager.application.api.module.components import CMetaInformation
+from media_manager.application.api.module.features import FMetaInformation
 
-ID = randint(0, 10**6)
+from .widget import CCloneDefaultWidget, FDefaultWidget
+from .window import CCloneWindow, FWindow
 
 
-class ProtectedModuleMeta(ModuleMeta):
-    def __init__(self):
-        super().__init__()
+class CCloneMetaInformation(CMetaInformation):
+    def __init__(self, context: Context):
+        super().__init__(context)
+        self.__context = context
 
     def id(self) -> str:
-        return f"Clone{ID}"
+        return f"{self.name()} ({self.version()})"
 
     def name(self) -> str:
-        return "Clone"
+        return f"Clone #{self.__context.unwrap('id', str)}"
 
     def version(self) -> str:
         return "0.0.1"
 
 
-class ProtectedModuleClient(MessageClient):
-    pass
-
-
-class ProtectedModuleWidget(ModuleDefaultWidget):
-    def __init__(self):
-        super().__init__()
-
-    def title(self) -> str:
-        return str(ID)
-
-
-class ProtectedModuleWindow(ModuleWindow):
-    def window(self) -> QWidget:
-        return Window(self, str(ID))
-
-
 class PublicModuleLoader(ModuleLoader):
-    def __init__(self):
-        super().__init__()
-
     def is_api_supported(self, version: str) -> bool:
         # Checks major version (minor must provide back-compatibility)
         return version.split(".", 3)[0] == "0"
 
-    def load(self) -> Module:
-        return Module(ProtectedModuleMeta(),
-                      ProtectedModuleClient(f'Clone{ID}', {'name': 'Clone', 'id': f'Clone{ID}'}),
-                      ProtectedModuleWidget(),
-                      ProtectedModuleWindow())
+    def load(self) -> ModuleBuilder:
+        clone_context = Context().with_object(str(randint(0, 10**6)), name="id")
 
-    def loading_priority(self) -> float | None:
-        return 1.0
+        return (ModuleFactory()
+                .install_component(FMetaInformation, CCloneMetaInformation, context=clone_context)
+                .install_component(FDefaultWidget, CCloneDefaultWidget, context=clone_context)
+                .install_component(FWindow, CCloneWindow, context=clone_context)
+                .assemble())
