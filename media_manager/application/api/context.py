@@ -55,12 +55,20 @@ class Context:
 
             case MessageClient.__name__:
                 server = self.__get_casted(MessageServer.__name__, MessageServer, critical=critical, respectful=False)
-                if server is not None:
-                    # TODO: Delayed registration
-                    client = MessageClient("", {})
-                    client.connect(server)
-                    return client
-                return None
+                if server is None:
+                    return None
+
+                client_id = self.checked("id", str, critical=False)
+                client_credits = self.checked("credits", dict, critical=False)
+                if not client_id or not client_credits:
+                    logging.error("%s: Attempting to create client with wrong id and credits: %s and %s",
+                                  utils.name(self), utils.name(client_id), utils.name(client_credits))
+                    raise RuntimeError(
+                        f"{utils.name(MessageClient)} requires both `id` and `credits` with types `str` and `dict`")
+
+                client = MessageClient(client_id, client_credits)
+                client.connect(server)
+                return client
 
         return self.manual(name, critical=critical)
 
