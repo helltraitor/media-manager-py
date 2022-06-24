@@ -1,4 +1,5 @@
 import logging
+
 from typing import Any, NamedTuple, Type, TypeVar
 
 from media_manager.application.api.deferred import DeferredPool, DeferredPoolChannel
@@ -15,8 +16,8 @@ class ContextItem(NamedTuple):
 
 
 class Context:
-    def __init__(self):
-        self.__storage: dict[str, ContextItem] = {}
+    def __init__(self, **items: ContextItem):
+        self.__storage: dict[str, ContextItem] = items
 
     def __get(self, name: str, *, respectful: bool = True) -> ContextItem | None:
         if name not in self.__storage:
@@ -76,6 +77,21 @@ class Context:
                             utils.name(self), name)
             raise RuntimeError(f"Name `{name}` out of context")
         return item.value
+
+    def union(self, context: "Context", *, override: bool = False) -> "Context":
+        storage = self.__storage.copy()
+        other = context.__storage.copy()
+        if intersected := storage.keys() & other.keys():
+            if not override:
+                logging.error("%s: Attempting to override intersected names when no override allowed: %s",
+                              utils.name(self), intersected)
+                raise RuntimeError(f"Unable to union the context: one or several names are intersected: {intersected}")
+            if any(not storage[name].visible for name in intersected):
+                logging.error("%s: Attempting to override intersected names when some of names are invisible: %s",
+                              utils.name(self), intersected)
+                raise RuntimeError(f"Unable to union the context: one or several names are intersected: {intersected}."
+                                   " Note: overriding is not allowed for invisible items")
+        return Context(**(storage | other))
 
     def unwrap(self, name: str, guard: Type[T]) -> T:
         some = self.checked(name, guard, critical=True)
