@@ -42,6 +42,7 @@ COMPONENTS_BY_FEATURE: dict[Feature, Type[Component]] = {
 class FTComponent:
     feature: Feature
     component: Type[Component] = field(compare=False, hash=False)
+    context: Context = field(compare=False, hash=False)
 
 
 class ModuleBuilder:
@@ -66,7 +67,7 @@ class ModuleBuilder:
                               type(self).__name__, intersected)
                 raise RuntimeError(f"Some features already have components: {intersected}")
 
-            component = ftc.component(context)
+            component = ftc.component(context.union(ftc.context))
             for feature in ftc.feature.all_provides(including=True):
                 # We must have different ways to get component by feature
                 # Example:
@@ -110,7 +111,12 @@ class ModuleFactory:
         # All modules are subclasses of BasicModule, so we don't want to have one more basic module class in mro
         return ModuleBuilder(tuple(bases), frozenset((self.__installed | self.__overrided).values()))
 
-    def install_component(self, feature: Feature, component: Type[Component], *, critical: bool = True) -> "ModuleFactory":
+    def install_component(self,
+                          feature: Feature,
+                          component: Type[Component],
+                          *,
+                          context: Context | None = None,
+                          critical: bool = True) -> "ModuleFactory":
         if feature not in SUPPORTED_FEATURES:
             logging.warning("%s: %s is not supported", type(self).__name__, feature)
             if critical:
@@ -137,12 +143,16 @@ class ModuleFactory:
                               type(self).__name__, feature.name, requirement.name)
             raise RuntimeError(f"Some requirements of {feature} are not satisfied: {requirements}")
 
-        self.__installed[feature] = FTComponent(feature, component)
+        self.__installed[feature] = FTComponent(feature, component, context or Context())
         self.__features.add(feature)
         self.__features.update(feature.all_provides())
         return self
 
-    def override_component(self, feature: Feature, component: Type[Component]) -> "ModuleFactory":
+    def override_component(self,
+                           feature: Feature,
+                           component: Type[Component],
+                           *,
+                           context: Context | None = None) -> "ModuleFactory":
         if feature in SUPPORTED_FEATURES:
             logging.warning("%s: System component with %s was overrided",
                             type(self).__name__, feature)
@@ -153,7 +163,7 @@ class ModuleFactory:
                               type(self).__name__, feature.name, requirement.name)
             raise RuntimeError(f"Some requirements of {feature} are not satisfied: {requirements}")
 
-        self.__overrided[feature] = FTComponent(feature, component)
+        self.__overrided[feature] = FTComponent(feature, component, context or Context())
         self.__features.add(feature)
         self.__features.update(feature.all_provides())
         return self
