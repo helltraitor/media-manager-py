@@ -85,7 +85,7 @@ class Context:
             raise RuntimeError(f"Unable to unwrap {name} with guard type {guard} from context")
         return some
 
-    def with_object(self, some: Any, *, name: str | None = None, visible: bool = True):
+    def with_object(self, some: Any, *, name: str | None = None, visible: bool = True) -> "Context":
         key = name if name is not None else utils.name(some)
         item = self.__get(key, respectful=False)
         if item is not None:
@@ -93,3 +93,4 @@ class Context:
                             utils.name(self), utils.name(some), name)
             raise RuntimeError(f"Object with the same name already exits with visible state `{item.visible}`")
         self.__storage[key] = ContextItem(visible, some)
+        return self
