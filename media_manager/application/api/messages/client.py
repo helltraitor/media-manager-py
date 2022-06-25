@@ -2,54 +2,74 @@ import logging
 
 from abc import ABC
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .server import MessageServer
+from typing import Generator, Protocol
 
-from .message import Message
-from .reply import Reply
+from media_manager.application import utils
+
+from .handler import MessageHandler
+from .message import SignableMessage
+from .result import Result
+from .target import Target
+
+
+class MessageServer(Protocol):
+    def login(self, client: "MessageClient"): ...
+
+    def logout(self, client: "MessageClient"): ...
+
+    def send(self, client: "MessageClient", target: Target, message: SignableMessage) -> Result: ...
 
 
 class MessageClient(ABC):
     def __init__(self, id: str, credits: dict[str, str]):
         self.__id = id
         self.__credits = credits
-        self.__server: "MessageServer | None" = None
+        self.__handlers: dict[str, MessageHandler] = {}
+        self.__server: MessageServer | None = None
 
-    def accepts(self, credits: dict[str, str]) -> bool:
-        return False
+    def __del__(self):
+        self.disconnect()
 
     def credits(self) -> dict[str, str]:
+    def add_handler(self, key: str, handler: MessageHandler):
+        self.__handlers[key] = handler
         return self.__credits.copy()
 
     def connected(self) -> bool:
         return self.__server is not None
 
-    def connect(self, server: "MessageServer"):
+    def connect(self, server: MessageServer):
         if self.__server is not None:
             if self.__server is server:
-                logging.error(f'{type(self).__name__}: Attempting to connect client to its server again')
+                logging.error('%s: Attempting to connect client to the same server twice',
+                              utils.name(self))
                 return
-            logging.warning(f'{type(self).__name__}: Reconnection may cause further errors')
+            logging.warning('%s: Client is reconnected. Reconnection may cause further errors',
+                            utils.name(self))
             self.disconnect()
         self.__server = server
         self.__server.login(self)
 
+    def delete_handler(self, key: str):
+        if key not in self.__handlers:
+            logging.warning("%s: Attempting to delete non-existing handler with key %s",
+                            utils.name(self), key)
+            return
+        del self.__handlers[key]
+
     def disconnect(self):
         if self.__server is None:
-            logging.error(f'{type(self).__name__}: Attempting to close server while no connection exists')
-            raise RuntimeError
-        MessageServer.logout(self.__server, self)
+            logging.error('%s: Attempting to close server while no connection exists',
+                          utils.name(self))
+            raise RuntimeError("Unable to disconnect. Client is not logon")
         self.__server.logout(self)
 
     def id(self) -> str:
         return self.__id
 
-    def send(self, target: dict[str, str], message: Message) -> bool | None:
-        # None - not found
-        # True - Received
-        # False - Error
+    def send(self, target: Target, message: SignableMessage) -> Result:
+        if self.__server is None:
+            logging.error("%s: Attempting to send message when client is not logon on any server",
+                          utils.name(self))
+            raise RuntimeError("Client was not connect to the server")
         return self.__server.send(self, target, message)
-
-    def receive(self, message: Message) -> Reply:
-        return Reply({})
