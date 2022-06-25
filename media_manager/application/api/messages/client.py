@@ -6,6 +6,7 @@ from typing import Generator, Protocol
 
 from media_manager.application import utils
 
+from .credits import Credits
 from .handler import MessageHandler
 from .message import SignableMessage
 from .result import Result
@@ -21,8 +22,7 @@ class MessageServer(Protocol):
 
 
 class MessageClient(ABC):
-    def __init__(self, id: str, credits: dict[str, str]):
-        self.__id = id
+    def __init__(self, credits: Credits):
         self.__credits = credits
         self.__handlers: dict[str, MessageHandler] = {}
         self.__server: MessageServer | None = None
@@ -30,9 +30,10 @@ class MessageClient(ABC):
     def __del__(self):
         self.disconnect()
 
-    def credits(self) -> dict[str, str]:
     def add_handler(self, key: str, handler: MessageHandler):
         self.__handlers[key] = handler
+
+    def credits(self) -> Credits:
         return self.__credits.copy()
 
     def connected(self) -> bool:
@@ -64,8 +65,10 @@ class MessageClient(ABC):
             raise RuntimeError("Unable to disconnect. Client is not logon")
         self.__server.logout(self)
 
-    def id(self) -> str:
-        return self.__id
+    def handlers(self, credits: Credits) -> Generator[MessageHandler, None, None]:
+        for handler in self.__handlers.values():
+            if handler.accepts(credits):
+                yield handler
 
     def send(self, target: Target, message: SignableMessage) -> Result:
         if self.__server is None:
