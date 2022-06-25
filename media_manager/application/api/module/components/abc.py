@@ -3,6 +3,7 @@ import logging
 from typing import Optional, Type, TypeVar
 from weakref import ReferenceType
 
+from media_manager.application import utils
 from media_manager.application.api.context import Context
 from media_manager.application.api.module.features import Feature
 
@@ -22,6 +23,18 @@ class Component:
         if self.__module is not None:
             return self.__module()
         return None
+
+    def unwrap_module(self) -> "Module":
+        if self.__module is None:
+            logging.error("%s: Attempting to unwrap non-linked module",
+                          utils.name(self))
+            raise RuntimeError("Unable to unwrap module: module was not linked")
+        module: "Module | None" = self.__module()
+        if module is None:
+            logging.error("%s: Attempting to unwrap module while weak reference is dead",
+                          utils.name(self))
+            raise RuntimeError("Unable to unwrap module: module was unlinked")
+        return module
 
 
 class ComponentStorage:
