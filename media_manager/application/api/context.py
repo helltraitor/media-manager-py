@@ -72,8 +72,8 @@ class Context:
 
         return self.manual(name, critical=critical)
 
-    def checked(self, name: str, guard: Type[T], *, critical: bool = True) -> T | None:
-        some = self.auto(name, critical=critical)
+    def checked(self, name: str, guard: Type[T]) -> T | None:
+        some = self.auto(name, critical=False)
         return some if isinstance(some, guard) else None
 
     def manual(self, name: str, *, critical: bool = True) -> Any | None:
@@ -102,7 +102,7 @@ class Context:
         return Context(**(storage | other))
 
     def unwrap(self, name: str, guard: Type[T]) -> T:
-        some = self.checked(name, guard, critical=True)
+        some = self.checked(name, guard)
         if some is None:
             logging.warning("%s: Attempting to unwrap `%s` with type %s. `%s` is not instance of %s",
                             utils.name(self), name, utils.name(guard), name, utils.name(guard))
