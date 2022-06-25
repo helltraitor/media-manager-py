@@ -3,7 +3,7 @@ import logging
 from typing import Any, NamedTuple, Type, TypeVar
 
 from media_manager.application.api.deferred import DeferredPool, DeferredPoolChannel
-from media_manager.application.api.messages import MessageServer, MessageClient
+from media_manager.application.api.messages import Credits, MessageServer, MessageClient
 from media_manager.application import utils
 
 
@@ -58,15 +58,13 @@ class Context:
                 if server is None:
                     return None
 
-                client_id = self.checked("id", str, critical=False)
-                client_credits = self.checked("credits", dict, critical=False)
-                if not client_id or not client_credits:
-                    logging.error("%s: Attempting to create client with wrong id and credits: %s and %s",
-                                  utils.name(self), utils.name(client_id), utils.name(client_credits))
-                    raise RuntimeError(
-                        f"{utils.name(MessageClient)} requires both `id` and `credits` with types `str` and `dict`")
+                credits = self.checked("credits", Credits)
+                if credits is None:
+                    logging.error("%s: Attempting to create client without credits",
+                                  utils.name(self))
+                    raise RuntimeError("No credits provided for client")
 
-                client = MessageClient(client_id, client_credits)
+                client = MessageClient(credits)
                 client.connect(server)
                 return client
 
