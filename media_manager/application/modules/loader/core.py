@@ -6,7 +6,7 @@ from typing import Generator, Type
 
 from media_manager.application.api.context import Context
 from media_manager.application.api.module import PrimitiveModule, ModuleLoader
-from media_manager.application.constants import APPLICATION_MODULE_API_VERSION
+from media_manager.application.constants import APPLICATION_API_VERSION
 
 from .wrappers import Import, ImportLocations
 
@@ -39,7 +39,7 @@ class Loader:
         for t_loader in loaders:
             try:
                 o_loader = t_loader()
-                if not o_loader.is_api_supported(APPLICATION_MODULE_API_VERSION):
+                if not o_loader.is_api_supported(APPLICATION_API_VERSION):
                     logging.warning(
                         "%s: Application module api version is not supported for module. Skipped...",
                         Loader.__name__)
