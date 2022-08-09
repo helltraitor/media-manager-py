@@ -46,6 +46,7 @@ class Feature:
 
 FDeferred = Feature("Deferred", component="DeferredPoolChannel")
 FMessages = Feature("Messages", component="MessageClient")
+FShutdown = Feature("Shutdown", component="Shutdown")
 
 FMetaInformation = Feature("MetaInformation", component="MetaInformation")
 
@@ -59,6 +60,7 @@ SUPPORTED_FEATURES = frozenset((
     FDeferred,
     FMessages,
     FMetaInformation,
+    FShutdown,
     FWidget,
     FWindow
 ))
