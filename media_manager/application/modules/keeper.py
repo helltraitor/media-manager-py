@@ -1,6 +1,8 @@
 import logging
 
 from media_manager.application.api.module import PrimitiveModule
+from media_manager.application.api.module.components import CShutdown
+from media_manager.application.api.module.features import FShutdown
 
 
 class Keeper:
@@ -12,6 +14,12 @@ class Keeper:
             _double_add_warning(type(self).__name__, self.__modules[module.meta().id()], module)
             return
         self.__modules[module.meta().id()] = module
+
+    def drop(self):
+        for module in self.__modules.values():
+            component = module.components().get(FShutdown, CShutdown)
+            if component is not None:
+                component.shutdown()
 
     def contains(self, *, id: str | None = None, module: PrimitiveModule | None = None) -> bool:
         if id is not None:
