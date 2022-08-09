@@ -26,6 +26,8 @@ class Application(QApplication):
         self.__setup(location)
 
     def __setup(self, location: Path):
+        self.aboutToQuit.connect(self.__stop)
+
         deferred_pool = DeferredPool()
         self.__deferred_timer.timeout.connect(deferred_pool.process)
         self.context.with_object(deferred_pool, visible=False)
@@ -45,3 +47,6 @@ class Application(QApplication):
         self.__deferred_timer.start(25)
         self.window.show()
         return self.exec_()
+
+    def __stop(self) -> None:
+        self.keeper.drop()
