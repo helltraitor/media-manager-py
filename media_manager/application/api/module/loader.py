@@ -1,17 +1,19 @@
-from abc import ABC, abstractmethod
+from collections.abc import Sequence
+from typing import Protocol, runtime_checkable
 
 from .factory import ModuleBuilder
+from ..version import Version
 
 
-class ModuleLoader(ABC):
-    @abstractmethod
-    def is_api_supported(self, version: str) -> bool:
-        pass
+@runtime_checkable
+class ModuleLoader(Protocol):
+    def dependencies(self) -> Sequence[tuple[str, Version]]:
+        return ()
 
-    @abstractmethod
-    def load(self) -> ModuleBuilder:
-        pass
+    def load(self) -> ModuleBuilder: ...
 
-    @staticmethod
-    def loading_priority() -> float | None:
-        return None
+    def name(self) -> str: ...
+
+    def supports(self, version: Version) -> bool: ...
+
+    def version(self) -> Version: ...
