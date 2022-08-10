@@ -15,7 +15,7 @@ class Window(QWidget):
     def __init__(self):
         super().__init__()
         self.events = EventPool()
-        self.__icon = QIcon(APPLICATION_ICON)
+        self.__icon = QIcon(str(APPLICATION_ICON))
 
         self.__layout = QHBoxLayout(self)
         self.__side = SideBar(self.events)
