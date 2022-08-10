@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from random import randint
 
 from media_manager.application.api.context import Context
@@ -8,19 +9,29 @@ from media_manager.application.api.module.factory import ModuleFactory, ModuleBu
 from media_manager.application.api.module.components import CMessageClient, CMetaInformation, CDefaultWidget
 from media_manager.application.api.module.features import FMessages, FMetaInformation, FDefaultWidget
 
+from media_manager.application.api.version import Version
+
 from .window import CCloneWindow, FWindow
 
 RANDOM_ID = str(randint(0, 10**6))
 
-NAME = f"Clone #{RANDOM_ID}"
+NAME = f"Clone"
 VERSION = "0.0.1"
-ID = f"{NAME} ({VERSION})"
+ID = f"{NAME} ({VERSION}) #{RANDOM_ID}"
 
 
 class PublicModuleLoader(ModuleLoader):
-    def is_api_supported(self, version: str) -> bool:
-        # Checks major version (minor must provide back-compatibility)
-        return version.split(".", 3)[0] == "0"
+    def dependencies(self) -> Sequence[tuple[str, Version]]:
+        return [("Settings", Version(0))]
+
+    def supports(self, version: Version) -> bool:
+        return version.major == 0
+
+    def name(self) -> str:
+        return "Clone"
+
+    def version(self) -> Version:
+        return Version(0, 0, 1)
 
     def load(self) -> ModuleBuilder:
         custom = (Context()

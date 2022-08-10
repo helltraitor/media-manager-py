@@ -1,4 +1,3 @@
-import logging
 from weakref import ReferenceType
 
 from PySide2.QtCore import Qt
@@ -35,13 +34,17 @@ class CloneWindow(Window):
         self.__layout.addWidget(self.__clone_value, alignment=Qt.AlignTop)
         self.__layout.addWidget(self.__clone_down, alignment=Qt.AlignTop)
 
-    def link_stage_setup(self, name:str, id: str, client: CMessageClient):
+    def link_stage_setup(self, name: str, id: str, client: CMessageClient):
         self.__clone_title.setText(f"{name} [{id}]")
 
         self.__client = client
-        self.__client.client().send(
-            Target("Settings"),
-            SignableMessage({"action": "set", "key": "counter", "value": "0"}))
+        self.__client.client().send(Target("Settings"), CallbackMessage(
+            {"action": "get", "key": "counter"},
+            lambda reply: self.__clone_value.setText(reply.content().get("value", "0"))))
+
+        # self.__client.client().send(
+        #     Target("Settings"),
+        #     SignableMessage({"action": "set", "key": "counter", "value": "0"}))
 
         self.__clone_up.clicked.connect(lambda: self.change_value(1))
         self.__clone_down.clicked.connect(lambda: self.change_value(-1))
