@@ -1,7 +1,9 @@
 import logging
 import sys
 
+from collections.abc import Iterable
 from importlib import import_module
+from pathlib import Path
 from types import ModuleType
 
 
@@ -25,10 +27,10 @@ class Import:
 
 
 class ImportLocations:
-    def __init__(self, *locations: str):
+    def __init__(self, locations: Iterable[Path]):
         self.system_locations: list[str] = sys.path
         self.import_locations: dict[str, bool] = {
-            location: location in self.system_locations for location in locations
+            location: location in self.system_locations for location in map(str, locations)
         }
 
     def __enter__(self):

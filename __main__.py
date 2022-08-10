@@ -5,6 +5,7 @@ import pathlib
 import sys
 
 from media_manager.application import Application
+from media_manager.application.modules.loader import Loader
 from media_manager.application.constants import (
     APPLICATION_AUTHOR, APPLICATION_NAME, APPLICATION_VERSION, APPLICATION_API_VERSION
 )
@@ -19,6 +20,9 @@ if __name__ == "__main__":
         format="%(asctime)s %(levelname)7s: %(filename)s %(funcName)s: %(message)s",
         level=logging.DEBUG)
 
+    application = Application()
+
     location = pathlib.Path(__file__).parent
-    application = Application(location)
+    Loader({location / "media_manager" / "modules"}).load(application.manager.resolver)
+
     sys.exit(application.start())

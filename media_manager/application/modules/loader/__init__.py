@@ -1,1 +1,2 @@
-from .core import Loader
+from .loader import Loader
+from .resolver import Resolver
