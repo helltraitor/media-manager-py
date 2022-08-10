@@ -11,13 +11,13 @@ from media_manager.application.api.messages import (
 from media_manager.application.api.module.components import CMessageClient
 from media_manager.application.api.module.features import FMessages
 
-from .storage import Storage
+from .storage import Storage, Lifetime
 
 
 class CSettingsMessageClient(CMessageClient):
     def __init__(self, context: Context):
         super().__init__(context)
-        self.__storage = Storage()
+        self.__storage = context.unwrap("storage", Storage)
         self.__setup()
 
     def __setup(self):
@@ -35,46 +35,62 @@ class SettingsMessageAnyHandler(MessageHandler):
         logging.debug("%s: Received message from %s with content: %s",
                       type(self).__name__, message.credits(), message.content())
 
-        domain = self.__storage.domain(message.credits().id())
+        domain = self.__storage.ensure_get(message.credits().name())
         match message.content().get("action", None):
             case "delete":
                 if (key := message.content().get("key", None)) is None:
                     return Reply(Result("ERROR", "Key in action was not set"))
-
-                default = message.content().get("returning", None)
-                if default is not None:
-                    returning = domain.delete(key, default)
-                    return Reply(Result("OK"), content={"value": str(returning)})
-                if domain.delete(key) is not None:
-                    return Reply(Result("OK"))
-                return Reply(Result("ERROR", f"Key {key} not in storage"))
+                logging.debug("Deleted key %s", key)
+                domain.delete(key)
 
             case "get":
                 if (key := message.content().get("key", None)) is None:
                     return Reply(Result("ERROR", "Key in action was not set"))
-                if (value := domain.get(key, message.content().get("default", None))) is None:
+                if (record := domain.get(key, message.content().get("default", None))) is None:
+                    logging.debug("NO KEY %s", key)
                     return Reply(Result("ERROR", f"No value for key {key}"))
-                return Reply(Result("OK"), content={"value": value})
+                logging.debug("Got key %s with value %s", key, record.value)
+                return Reply(Result("OK"), content={"value": record.value.decode()})
 
             case "set":
                 if (key := message.content().get("key", None)) is None:
                     return Reply(Result("ERROR", "Key in action was not set"))
                 if (value := message.content().get("value", None)) is None:
                     return Reply(Result("ERROR", f"No value for key {key}"))
-                domain.set(key, value)
-                return Reply(Result("OK"))
 
-            case "update":
+                seconds = message.content().get("lifetime_seconds", None)
+                lifetime = Lifetime.default() if seconds is None else Lifetime(seconds=int(seconds))
+
+                logging.debug("Set key %s with value %s and lifetime seconds %s", key, value, lifetime.seconds_left())
+                domain.set(key, value.encode(), lifetime)
+
+            case "pop":
+                if (key := message.content().get("key", None)) is None:
+                    return Reply(Result("ERROR", "Key in action was not set"))
+                default = message.content().get("value", None)
+
+                record = domain.pop(key, default and default.encode())
+                if record is not None:
+                    logging.debug("Popped key %s with value %s", key, record.value)
+                    return Reply(Result("OK"), content={"value": record.value.decode()})
+
+            case "replace":
                 if (key := message.content().get("key", None)) is None:
                     return Reply(Result("ERROR", "Key in action was not set"))
                 if (value := message.content().get("value", None)) is None:
                     return Reply(Result("ERROR", f"No value for key {key}"))
-                if (returning := message.content().get("returning", None)) is None:
-                    return Reply(Result("ERROR", "Returning value is not specified"))
-                return Reply(Result("OK"), content={"value": domain.update(key, value, returning)})
+
+                seconds = message.content().get("lifetime_seconds", None)
+                lifetime = Lifetime.default() if seconds is None else Lifetime(seconds=int(seconds))
+
+                record = domain.replace(key, value.encode(), lifetime)
+                if record is not None:
+                    logging.debug("Replaced key %s with value %s", key, record.value)
+                    return Reply(Result("OK"), content={"value": record.value.decode()})
 
             case None:
                 return Reply(Result("ERROR", "Action was not set"))
 
             case other:
                 return Reply(Result("ERROR", f"Unknown action: {other}"))
+        return Reply(Result("OK"))
